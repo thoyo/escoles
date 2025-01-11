@@ -1,0 +1,6 @@
+pandas
+flask
+geopy
+folium
+shapely
+pyproj

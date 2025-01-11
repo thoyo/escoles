@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <style>
+        #map { height: 100vh; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([41.3879, 2.16992], 10);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 18,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Variables to store active markers and the radius circle
+        let activeMarkers = [];
+        let activeCircle = null;
+
+        // Function to clear all active markers and radius circle
+        function clearMap() {
+            activeMarkers.forEach(marker => map.removeLayer(marker));
+            activeMarkers = [];
+            if (activeCircle) {
+                map.removeLayer(activeCircle);
+                activeCircle = null;
+            }
+        }
+
+        // Function to fetch and display nearby markers
+        function fetchAndDisplayNearbyMarkers(lat, lng) {
+            const radius = 500; // Radius in meters
+            fetch(`/nearby?lat=${lat}&lng=${lng}&radius=${radius}`)
+                .then(response => response.json())
+                .then(data => {
+                    // Draw the 500m radius circle
+                    activeCircle = L.circle([lat, lng], {
+                        color: 'blue',
+                        fillColor: '#a3c9ff',
+                        fillOpacity: 0.3,
+                        radius: radius
+                    }).addTo(map);
+
+                    // Draw the detected area if any
+                    if (data.area) {
+                        const areaCoords = data.area.geometry.coordinates;
+                        activeArea = L.geoJSON(data.area, {
+                            style: { color: 'purple', fillOpacity: 0.2 }
+                        }).addTo(map);
+                    }
+
+                    // Add markers for each feature returned by the backend
+                    data.features.forEach(feature => {
+                        const coords = feature.geometry.coordinates;
+                        const titularitat = feature.properties["nom_titularitat"];
+
+                        // Determine marker color
+                        const markerColor = titularitat === "Departament d'Educació" ? "blue" : "green";
+
+                        // Create a marker with the color-coded icon
+                        const marker = L.circleMarker([coords[1], coords[0]], {
+                            radius: 8,
+                            fillColor: markerColor,
+                            color: markerColor,
+                            weight: 1,
+                            fillOpacity: 0.8
+                        })
+                        .bindPopup(`
+                            <strong>${feature.properties["denominaci_completa"]}</strong><br>
+                            Titularitat: ${titularitat || "Unknown"}<br>
+                            Adreça: ${feature.properties["adre_a"]}
+                        `);
+
+                        marker.addTo(map);
+                        activeMarkers.push(marker);
+                    });
+                });
+        }
+
+        // Handle map click event
+        map.on('click', function (e) {
+            clearMap(); // Clear existing markers and radius circle
+            fetchAndDisplayNearbyMarkers(e.latlng.lat, e.latlng.lng); // Fetch and display new markers
+        });
+    </script>
+</body>
+</html>
