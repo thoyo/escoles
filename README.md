@@ -1,6 +1,15 @@
-* display the 500m radius
-* color code public and concertated schools
-* display the areas
+* ~~display the 500m radius~~
+* ~~color code public and concertated schools~~
+* ~~display the areas~~
+* add timeseries about
+  * requests
+  * offers
+  * requests/offers
+* improve placemarks
+* add placemark for home
+* show "list" view alongside the map
+* add also checking for at least 6 centers of each type
+* remove non barcelonian areas
 * refs
   * https://educacio.gencat.cat/web/.content/home/arees-actuacio/centres-serveis-educatius/centres/directori-centres/codisnivellseducatius.pdf
   * https://www.edubcn.cat/rcs_gene/extra/02_proximitat/BCN_211004_OBLIGATORIS_MAPA_2021-2022.pdf
