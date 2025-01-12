@@ -25,6 +25,7 @@
         // Variables to store active markers and the radius circle
         let activeMarkers = [];
         let activeCircle = null;
+        let activeArea = null;
 
         // Function to clear all active markers and radius circle
         function clearMap() {
@@ -34,6 +35,11 @@
                 map.removeLayer(activeCircle);
                 activeCircle = null;
             }
+            if (activeArea) {
+                map.removeLayer(activeArea);
+                activeArea = null;
+            }
+
         }
 
         // Function to fetch and display nearby markers
