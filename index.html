@@ -22,12 +22,21 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // Variables to store active markers and the radius circle
+        // Variables to store active markers, radius circle, area, and home marker
         let activeMarkers = [];
         let activeCircle = null;
         let activeArea = null;
+        let homeMarker = null;
 
-        // Function to clear all active markers and radius circle
+        // Define a custom home icon
+        const homeIcon = L.icon({
+            iconUrl: 'https://cdn-icons-png.flaticon.com/512/69/69524.png', // URL of the home icon
+            iconSize: [32, 32], // Size of the icon [width, height]
+            iconAnchor: [16, 32], // Point of the icon that corresponds to the marker's location
+            popupAnchor: [0, -32] // Point where the popup should open relative to the iconAnchor
+        });
+
+        // Function to clear all active markers, radius circle, area, and home marker
         function clearMap() {
             activeMarkers.forEach(marker => map.removeLayer(marker));
             activeMarkers = [];
@@ -39,7 +48,10 @@
                 map.removeLayer(activeArea);
                 activeArea = null;
             }
-
+            if (homeMarker) {
+                map.removeLayer(homeMarker);
+                homeMarker = null;
+            }
         }
 
         // Function to fetch and display nearby markers
@@ -94,9 +106,21 @@
 
         // Handle map click event
         map.on('click', function (e) {
-            clearMap(); // Clear existing markers and radius circle
-            fetchAndDisplayNearbyMarkers(e.latlng.lat, e.latlng.lng); // Fetch and display new markers
+            const { lat, lng } = e.latlng;
+
+            clearMap(); // Clear existing markers, radius circle, area, and home marker
+
+            // Place a home marker at the clicked location
+            homeMarker = L.marker([lat, lng], { icon: homeIcon })
+                .addTo(map)
+                .bindPopup(`<strong>Clicked Location:</strong><br>Latitude: ${lat}<br>Longitude: ${lng}`)
+                .openPopup();
+
+            // Fetch and display nearby markers
+            fetchAndDisplayNearbyMarkers(lat, lng);
         });
     </script>
 </body>
 </html>
+
+
