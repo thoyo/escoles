@@ -6,7 +6,7 @@ build:
 
 # Run the application
 run:
-	docker-compose up
+	docker-compose up -d
 
 # Stop the application
 stop:
