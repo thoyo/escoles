@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flask_app
+    ports:
+      - "5000:5000" # Map host port 5000 to container port 5000
+    volumes:
+      - .:/app  # Mount the current directory inside the container (for development)
+    environment:
+      FLASK_ENV: development # Set Flask environment to development
+    ports:
+      - "5000:5000"
+    stdin_open: true
+    tty: true
+
