@@ -100,82 +100,86 @@
             resultList.innerHTML = '<p>No results found.</p>'; // Clear result list
         }
 
-        // Function to fetch and display nearby markers
         function fetchAndDisplayNearbyMarkers(lat, lng) {
-            const radius = 500; // Radius in meters
-            fetch(`/nearby?lat=${lat}&lng=${lng}&radius=${radius}`)
-                .then(response => response.json())
-                .then(data => {
-                    resultList.innerHTML = ''; // Clear the previous results
+    const radius = 500; // Radius in meters
+    fetch(`/nearby?lat=${lat}&lng=${lng}&radius=${radius}`)
+        .then(response => response.json())
+        .then(data => {
+            resultList.innerHTML = ''; // Clear the previous results
 
-                    // Draw the 500m radius circle
-                    activeCircle = L.circle([lat, lng], {
-                        color: 'blue',
-                        fillColor: '#a3c9ff',
-                        fillOpacity: 0.3,
-                        radius: radius
-                    }).addTo(map);
+            // Draw the 500m radius circle
+            activeCircle = L.circle([lat, lng], {
+                color: 'blue',
+                fillColor: '#a3c9ff',
+                fillOpacity: 0.3,
+                radius: radius
+            }).addTo(map);
 
-                    // Draw the detected area if any
-                    if (data.area) {
-                        const areaCoords = data.area.geometry.coordinates;
-                        activeArea = L.geoJSON(data.area, {
-                            style: { color: 'purple', fillOpacity: 0.2 }
-                        }).addTo(map);
-                    }
+            // Draw the detected area if any
+            if (data.area) {
+                activeArea = L.geoJSON(data.area, {
+                    style: { color: 'purple', fillOpacity: 0.2 }
+                }).addTo(map);
+            }
 
-                    // Add markers for each feature returned by the backend
-                    data.features.forEach(feature => {
-                        const coords = feature.geometry.coordinates;
-                        const titularitat = feature.properties["nom_titularitat"];
-                        const distance = feature.properties["distance_to_home"]; // Get the distance from the backend
+            // Sort features by distance in ascending order
+            const sortedFeatures = data.features.sort(
+                (a, b) => a.properties.distance_to_home - b.properties.distance_to_home
+            );
 
-                        // Determine marker color
-                        const markerColor = titularitat === "Departament d'Educació" ? "blue" : "green";
+            // Add markers and sorted results to the map and list
+            sortedFeatures.forEach(feature => {
+                const coords = feature.geometry.coordinates;
+                const titularitat = feature.properties["nom_titularitat"];
+                const distance = feature.properties["distance_to_home"]; // Get the distance from the backend
 
-                        // Create a marker with the color-coded icon
-                        const marker = L.circleMarker([coords[1], coords[0]], {
-                            radius: 8,
-                            fillColor: markerColor,
-                            color: markerColor,
-                            weight: 1,
-                            fillOpacity: 0.8
-                        })
-                        .bindPopup(`
-                            <strong>${feature.properties["denominaci_completa"]}</strong><br>
-                            Titularitat: ${titularitat || "Unknown"}<br>
-                            Adreça: ${feature.properties["adre_a"]}<br>
-                            Distancia: ${distance.toFixed(2)} metres
-                        `);
+                // Determine marker color
+                const markerColor = titularitat === "Departament d'Educació" ? "blue" : "green";
 
-                        marker.addTo(map);
-                        activeMarkers.push(marker);
+                // Create a marker with the color-coded icon
+                const marker = L.circleMarker([coords[1], coords[0]], {
+                    radius: 8,
+                    fillColor: markerColor,
+                    color: markerColor,
+                    weight: 1,
+                    fillOpacity: 0.8
+                })
+                .bindPopup(`
+                    <strong>${feature.properties["denominaci_completa"]}</strong><br>
+                    Titularitat: ${titularitat || "Unknown"}<br>
+                    Adreça: ${feature.properties["adre_a"]}<br>
+                    Distance: ${distance.toFixed(2)} meters
+                `);
 
-                        // Add to the results list
-                        const resultItem = document.createElement('div');
-                        resultItem.className = 'result-item';
-                        resultItem.innerHTML = `
-                            <div class="result-title">${feature.properties["denominaci_completa"]}</div>
-                            <div>Titularitat: ${titularitat || "Unknown"}</div>
-                            <div>Adreça: ${feature.properties["adre_a"]}</div>
-                            <div>Distancia: ${distance.toFixed(2)} metres</div>
-                        `;
+                marker.addTo(map);
+                activeMarkers.push(marker);
 
-                        // Center map on marker when result item is clicked
-                        resultItem.addEventListener('click', () => {
-                            map.setView([coords[1], coords[0]], 15);
-                            marker.openPopup();
-                        });
+                // Add to the results list
+                const resultItem = document.createElement('div');
+                resultItem.className = 'result-item';
+                resultItem.innerHTML = `
+                    <div class="result-title">${feature.properties["denominaci_completa"]}</div>
+                    <div>Titularitat: ${titularitat || "Unknown"}</div>
+                    <div>Adreça: ${feature.properties["adre_a"]}</div>
+                    <div>Distance: ${distance.toFixed(2)} meters</div>
+                `;
 
-                        resultList.appendChild(resultItem);
-                    });
-
-                    // If no features found, show a message
-                    if (!data.features.length) {
-                        resultList.innerHTML = '<p>No results found.</p>';
-                    }
+                // Center map on marker when result item is clicked
+                resultItem.addEventListener('click', () => {
+                    map.setView([coords[1], coords[0]], 15);
+                    marker.openPopup();
                 });
-        }
+
+                resultList.appendChild(resultItem);
+            });
+
+            // If no features found, show a message
+            if (!sortedFeatures.length) {
+                resultList.innerHTML = '<p>No results found.</p>';
+            }
+        });
+}
+
 
         // Handle map click event
         map.on('click', function (e) {
