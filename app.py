@@ -135,10 +135,11 @@ def serve_frontend():
     return send_from_directory('.', 'index.html')
 
 
-# Serve any static files (like CSS or JS) from the same directory
-@app.route("/<path:filename>")
-def serve_static_files(filename):
-    return send_from_directory('.', filename)
+# Catch-all route for all other paths
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    return '<h1>Site Under Construction</h1>', 200
 
 
 if __name__ == "__main__":
