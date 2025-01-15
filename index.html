@@ -52,6 +52,18 @@
 <body>
     <div id="map"></div>
     <div id="results">
+        <!-- Filter Section -->
+        <div id="filters" style="margin-bottom: 10px;">
+            <label>
+                <input type="checkbox" id="filter-publics" checked> Públics
+            </label>
+            <label style="margin-left: 10px;">
+                <input type="checkbox" id="filter-concertats" checked> Concertats i Privats
+            </label>
+        </div>
+
+    <!-- Results List -->
+
         <div id="result-list">Fes click al mapa per veure els centres educatius de proximitat a un domicili (3-12 anys) a la ciutat de Barcelona</div>
     </div>
 
@@ -100,7 +112,7 @@
             resultList.innerHTML = '<p>No results found.</p>'; // Clear result list
         }
 
-        function fetchAndDisplayNearbyMarkers(lat, lng) {
+function fetchAndDisplayNearbyMarkers(lat, lng) {
     const radius = 500; // Radius in meters
     fetch(`/nearby?lat=${lat}&lng=${lng}&radius=${radius}`)
         .then(response => response.json())
@@ -127,56 +139,79 @@
                 (a, b) => a.properties.distance_to_home - b.properties.distance_to_home
             );
 
-            // Add markers and sorted results to the map and list
-            sortedFeatures.forEach(feature => {
-                const coords = feature.geometry.coordinates;
-                const titularitat = feature.properties["nom_titularitat"];
-                const distance = feature.properties["distance_to_home"]; // Get the distance from the backend
+            // Function to filter and display results based on checkboxes
+            function filterResults() {
+                const showPublics = document.getElementById('filter-publics').checked;
+                const showConcertats = document.getElementById('filter-concertats').checked;
 
-                // Determine marker color
-                const markerColor = titularitat === "Departament d'Educació" ? "blue" : "green";
+                // Clear current markers and list
+                activeMarkers.forEach(marker => map.removeLayer(marker));
+                activeMarkers = [];
+                resultList.innerHTML = '';
 
-                // Create a marker with the color-coded icon
-                const marker = L.circleMarker([coords[1], coords[0]], {
-                    radius: 8,
-                    fillColor: markerColor,
-                    color: markerColor,
-                    weight: 1,
-                    fillOpacity: 0.8
-                })
-                .bindPopup(`
-                    <strong>${feature.properties["denominaci_completa"]}</strong><br>
-                    Titularitat: ${titularitat || "Unknown"}<br>
-                    Adreça: ${feature.properties["adre_a"]}<br>
-                    Distance: ${distance.toFixed(2)} meters
-                `);
+                sortedFeatures.forEach(feature => {
+                    const coords = feature.geometry.coordinates;
+                    const titularitat = feature.properties["nom_titularitat"];
+                    const distance = feature.properties["distance_to_home"]; // Get distance from backend
 
-                marker.addTo(map);
-                activeMarkers.push(marker);
+                    // Apply filters
+                    const isPublic = titularitat === "Departament d'Educació";
+                    if ((isPublic && !showPublics) || (!isPublic && !showConcertats)) {
+                        return; // Skip this feature if it doesn't match the filter
+                    }
 
-                // Add to the results list
-                const resultItem = document.createElement('div');
-                resultItem.className = 'result-item';
-                resultItem.innerHTML = `
-                    <div class="result-title">${feature.properties["denominaci_completa"]}</div>
-                    <div>Titularitat: ${titularitat || "Unknown"}</div>
-                    <div>Adreça: ${feature.properties["adre_a"]}</div>
-                    <div>Distance: ${distance.toFixed(2)} meters</div>
-                `;
+                    // Determine marker color
+                    const markerColor = isPublic ? "blue" : "green";
 
-                // Center map on marker when result item is clicked
-                resultItem.addEventListener('click', () => {
-                    map.setView([coords[1], coords[0]], 15);
-                    marker.openPopup();
+                    // Create a marker with the color-coded icon
+                    const marker = L.circleMarker([coords[1], coords[0]], {
+                        radius: 8,
+                        fillColor: markerColor,
+                        color: markerColor,
+                        weight: 1,
+                        fillOpacity: 0.8
+                    })
+                    .bindPopup(`
+                        <strong>${feature.properties["denominaci_completa"]}</strong><br>
+                        Titularitat: ${titularitat || "Unknown"}<br>
+                        Adreça: ${feature.properties["adre_a"]}<br>
+                        Distance: ${distance.toFixed(2)} meters
+                    `);
+
+                    marker.addTo(map);
+                    activeMarkers.push(marker);
+
+                    // Add to the results list
+                    const resultItem = document.createElement('div');
+                    resultItem.className = 'result-item';
+                    resultItem.innerHTML = `
+                        <div class="result-title">${feature.properties["denominaci_completa"]}</div>
+                        <div>Titularitat: ${titularitat || "Unknown"}</div>
+                        <div>Adreça: ${feature.properties["adre_a"]}</div>
+                        <div>Distance: ${distance.toFixed(2)} meters</div>
+                    `;
+
+                    // Center map on marker when result item is clicked
+                    resultItem.addEventListener('click', () => {
+                        map.setView([coords[1], coords[0]], 15);
+                        marker.openPopup();
+                    });
+
+                    resultList.appendChild(resultItem);
                 });
 
-                resultList.appendChild(resultItem);
-            });
-
-            // If no features found, show a message
-            if (!sortedFeatures.length) {
-                resultList.innerHTML = '<p>No results found.</p>';
+                // If no features match the filter, show a message
+                if (!resultList.children.length) {
+                    resultList.innerHTML = '<p>No results found.</p>';
+                }
             }
+
+            // Attach event listeners to checkboxes
+            document.getElementById('filter-publics').addEventListener('change', filterResults);
+            document.getElementById('filter-concertats').addEventListener('change', filterResults);
+
+            // Initial render with filters applied
+            filterResults();
         });
 }
 
