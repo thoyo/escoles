@@ -65,6 +65,13 @@
         .result-title {
             font-weight: bold;
         }
+
+        /* Ensure the map remains visible on vertical screens */
+        @media (max-width: 768px) {
+            #map {
+                min-height: 50vh; /* Adjust the value as needed */
+            }
+        }
     </style>
 </head>
 <body>
