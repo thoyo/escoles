@@ -114,7 +114,7 @@
 
 function fetchAndDisplayNearbyMarkers(lat, lng) {
     const radius = 500; // Radius in meters
-    fetch(`/nearby?lat=${lat}&lng=${lng}&radius=${radius}`)
+    fetch(`/projects/escoles/nearby?lat=${lat}&lng=${lng}&radius=${radius}`)
         .then(response => response.json())
         .then(data => {
             resultList.innerHTML = ''; // Clear the previous results

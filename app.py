@@ -117,7 +117,7 @@ def find_features(lat, lng, radius=500):
 
 
 # API endpoint to fetch nearby features
-@app.route("/nearby", methods=["GET"])
+@app.route("/projects/escoles/nearby", methods=["GET"])
 def get_nearby_features():
     # Extract latitude, longitude, and radius from query parameters
     lat = float(request.args.get("lat"))
@@ -130,7 +130,7 @@ def get_nearby_features():
 
 
 # Serve the frontend (index.html)
-@app.route("/")
+@app.route("/projects/escoles")
 def serve_frontend():
     return send_from_directory('.', 'index.html')
 
