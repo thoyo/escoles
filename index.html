@@ -128,6 +128,7 @@
                     data.features.forEach(feature => {
                         const coords = feature.geometry.coordinates;
                         const titularitat = feature.properties["nom_titularitat"];
+                        const distance = feature.properties["distance_to_home"]; // Get the distance from the backend
 
                         // Determine marker color
                         const markerColor = titularitat === "Departament d'Educació" ? "blue" : "green";
@@ -143,7 +144,8 @@
                         .bindPopup(`
                             <strong>${feature.properties["denominaci_completa"]}</strong><br>
                             Titularitat: ${titularitat || "Unknown"}<br>
-                            Adreça: ${feature.properties["adre_a"]}
+                            Adreça: ${feature.properties["adre_a"]}<br>
+                            Distancia: ${distance.toFixed(2)} metres
                         `);
 
                         marker.addTo(map);
@@ -156,6 +158,7 @@
                             <div class="result-title">${feature.properties["denominaci_completa"]}</div>
                             <div>Titularitat: ${titularitat || "Unknown"}</div>
                             <div>Adreça: ${feature.properties["adre_a"]}</div>
+                            <div>Distancia: ${distance.toFixed(2)} metres</div>
                         `;
 
                         // Center map on marker when result item is clicked
