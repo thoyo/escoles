@@ -1,3 +1,4 @@
+# TODO
 * ~~display the 500m radius~~
 * ~~color code public and concertated schools~~
 * ~~display the areas~~
@@ -20,7 +21,9 @@
 * warn about clicking outside barcelona
 * dont make the url with trailing slash fail
 * remove private centers
-* refs
+* add email and website of the center
+* hyperlink with link to google maps the address to the center
+# refs
   * https://educacio.gencat.cat/web/.content/home/arees-actuacio/centres-serveis-educatius/centres/directori-centres/codisnivellseducatius.pdf
   * https://www.edubcn.cat/rcs_gene/extra/02_proximitat/BCN_211004_OBLIGATORIS_MAPA_2021-2022.pdf
   * https://www.edubcn.cat/ca/alumnat_i_familia/informacio_general_matriculacio/arees_influencia/que_son
