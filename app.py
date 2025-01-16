@@ -130,7 +130,7 @@ def get_nearby_features():
 
 
 # Serve the frontend (index.html)
-@app.route("/projects/escoles")
+@app.route("/projects/escoles", strict_slashes=False)
 def serve_frontend():
     return send_from_directory('.', 'index.html')
 

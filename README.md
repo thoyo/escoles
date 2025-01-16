@@ -19,10 +19,12 @@
 * log activity to postgres
 * setup grafana for observability
 * warn about clicking outside barcelona
-* dont make the url with trailing slash fail
+* ~~dont make the url with trailing slash fail~~
 * remove private centers
 * add email and website of the center
 * hyperlink with link to google maps the address to the center
+* lint the frontend
+
 # refs
   * https://educacio.gencat.cat/web/.content/home/arees-actuacio/centres-serveis-educatius/centres/directori-centres/codisnivellseducatius.pdf
   * https://www.edubcn.cat/rcs_gene/extra/02_proximitat/BCN_211004_OBLIGATORIS_MAPA_2021-2022.pdf
