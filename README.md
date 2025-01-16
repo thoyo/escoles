@@ -27,3 +27,6 @@
   * https://opendata-ajuntament.barcelona.cat/data/es/dataset/20170706-districtes-barris/resource/5f8974a7-7937-4b50-acbc-89204d570df9
   * http://mapaescolar.gencat.cat/index.html
   * https://analisi.transparenciacatalunya.cat/Educaci-/Directori-de-centres-docents-TRA-ACOVID/3u9c-b74b/data_preview
+    * Missing centers (e.g says that "Cargol" is only for adults)
+  * https://analisi.transparenciacatalunya.cat/Educaci-/Directori-de-centres-docents-anual-Base-2020/kvmv-ahh4/about_data
+    * Wrong coords (e.g for Sadako)
