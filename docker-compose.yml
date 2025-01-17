@@ -1,5 +1,9 @@
 version: '3.8'
 
+networks:
+  private:
+    driver: bridge
+
 services:
   app:
     build:
@@ -14,6 +18,17 @@ services:
       FLASK_ENV: development # Set Flask environment to development
     ports:
       - "5000:5000"
+    networks:
+      - private
     stdin_open: true
     tty: true
 
+  postgres:
+    image: postgres
+    restart: always
+    env_file:
+      - .env  # Specify the .env file to read the environment variables
+    ports:
+      - "5432:5432"
+    networks:
+      - private
