@@ -7,13 +7,13 @@ networks:
 services:
   app:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ../escoles
+      dockerfile: ../escoles/Dockerfile
     container_name: flask_app
     ports:
       - "5000:5000" # Map host port 5000 to container port 5000
     volumes:
-      - .:/app  # Mount the current directory inside the container (for development)
+      - ../escoles:/app  # Mount the current directory inside the container (for development)
     environment:
       FLASK_ENV: development # Set Flask environment to development
     ports:
@@ -22,13 +22,3 @@ services:
       - private
     stdin_open: true
     tty: true
-
-  postgres:
-    image: postgres
-    restart: always
-    env_file:
-      - .env  # Specify the .env file to read the environment variables
-    ports:
-      - "5432:5432"
-    networks:
-      - private
