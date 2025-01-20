@@ -50,8 +50,8 @@ def find_features(lat, lng, radius=500):
             nearby_features.append(feature)
             log_details.append(
                 f"Feature {feature['properties']['denominaci_completa']} selected: within 500m radius (distance: {distance:.2f}m).")
-        titularitat = feature["properties"].get("nom_titularitat", "")
-        if titularitat == "Departament d'Educació":
+        naturalesa = feature["properties"].get("nom_naturalesa", "")
+        if naturalesa == "Públic":
             edu_features.append((feature, distance))
         else:
             non_edu_features.append((feature, distance))
@@ -85,7 +85,7 @@ def find_features(lat, lng, radius=500):
     concertats = 0
     # Log unique features added
     for feature in all_features.values():
-        if feature["properties"]["nom_titularitat"] == "Departament d'Educació":
+        if feature["properties"]["nom_naturalesa"] == "Públic":
             publics += 1
         else:
             concertats += 1

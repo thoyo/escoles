@@ -184,10 +184,11 @@ function fetchAndDisplayNearbyMarkers(lat, lng) {
                 sortedFeatures.forEach(feature => {
                     const coords = feature.geometry.coordinates;
                     const titularitat = feature.properties["nom_titularitat"];
+                    const naturalesa = feature.properties["nom_naturalesa"];
                     const distance = feature.properties["distance_to_home"]; // Get distance from backend
 
                     // Apply filters
-                    const isPublic = titularitat === "Departament d'Educació";
+                    const isPublic = naturalesa === "Públic";
                     if ((isPublic && !showPublics) || (!isPublic && !showConcertats)) {
                         return; // Skip this feature if it doesn't match the filter
                     }
