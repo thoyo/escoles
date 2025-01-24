@@ -16,8 +16,8 @@
 * ~~show "list" view alongside the map~~
 * ~~add also checking for at least 6 centers of each type~~
 * remove non barcelonian areas
-* log activity to postgres
-* setup grafana for observability
+* ~~log activity to postgres~~
+* ~~setup grafana for observability~~
 * warn about clicking outside barcelona
 * ~~dont make the url with trailing slash fail~~
 * remove private centers
@@ -35,3 +35,6 @@
     * Missing centers (e.g says that "Cargol" is only for adults)
   * https://analisi.transparenciacatalunya.cat/Educaci-/Directori-de-centres-docents-anual-Base-2020/kvmv-ahh4/about_data
     * Wrong coords (e.g for Sadako)
+
+# [assignations_data](assignations_data)
+Data extracted from https://glorialangreo.com/schools/
