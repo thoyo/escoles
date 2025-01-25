@@ -6,6 +6,7 @@
     <title>Cercador d'escoles properes al domicili</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Add Chart.js -->
     <style>
         /* Layout Styles */
         body {
@@ -72,6 +73,12 @@
                 min-height: 50vh; /* Adjust the value as needed */
             }
         }
+
+        /* Styling for the chart */
+        #chart-container {
+            height: 300px; /* Set height of the chart */
+            width: 100%;
+        }
     </style>
 </head>
 <body>
@@ -87,16 +94,21 @@
             </label>
         </div>
 
-    <!-- Results List -->
+        <!-- Results List -->
+        <div id="result-list">
+            Fes click al mapa per veure els centres educatius de proximitat a un domicili (3-12 anys) a la ciutat de Barcelona
+        </div>
 
-    <div id="result-list">
-        Fes click al mapa per veure els centres educatius de proximitat a un domicili (3-12 anys) a la ciutat de Barcelona</div>
+        <!-- Chart for remaining places -->
+        <div id="chart-container">
+            <canvas id="remainingPlacesChart"></canvas>
+        </div>
 
-    <div id="footer">
-        Aquesta web mostra els centres educatius (3-12 anys) més propers a un domicili a la ciutat de Barcelona, per als quals s'obtindria la màxima puntuació en la sol·licitud de places. <br>
-        Els resultats son aproximats --> <a href="https://www.edubcn.cat/ca/alumnat_i_familia/informacio_general_matriculacio/arees_influencia/consulta_de_centres_educatius#/cerca">Font oficial</a> <br>
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSfljeyu6oEJ_nKNj2SNqEBe_wEvju3hNm5PY_HbxNMPRLvmZg/viewform?usp=header">Comparteix el teu feedback!</a>
-    </div>
+        <div id="footer">
+            Aquesta web mostra els centres educatius (3-12 anys) més propers a un domicili a la ciutat de Barcelona, per als quals s'obtindria la màxima puntuació en la sol·licitud de places. <br>
+            Els resultats son aproximats --> <a href="https://www.edubcn.cat/ca/alumnat_i_familia/informacio_general_matriculacio/arees_influencia/consulta_de_centres_educatius#/cerca">Font oficial</a> <br>
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSfljeyu6oEJ_nKNj2SNqEBe_wEvju3hNm5PY_HbxNMPRLvmZg/viewform?usp=header">Comparteix el teu feedback!</a>
+        </div>
     </div>
 
     <script>
@@ -109,7 +121,7 @@
             attribution: '© OpenStreetMap contributors'
         }).addTo(map);
 
-        // Variables to store active markers, radius circle, area, and home marker
+        // Variables to store active markers, radius circle, area, home marker
         let activeMarkers = [];
         let activeCircle = null;
         let activeArea = null;
@@ -144,109 +156,160 @@
             resultList.innerHTML = '<p>No results found.</p>'; // Clear result list
         }
 
-function fetchAndDisplayNearbyMarkers(lat, lng) {
-    const radius = 500; // Radius in meters
-    fetch(`/projects/escoles/nearby?lat=${lat}&lng=${lng}&radius=${radius}`)
-        .then(response => response.json())
-        .then(data => {
-            resultList.innerHTML = ''; // Clear the previous results
+        function fetchAndDisplayNearbyMarkers(lat, lng) {
+            const radius = 500; // Radius in meters
+            fetch(`/projects/escoles/nearby?lat=${lat}&lng=${lng}&radius=${radius}`)
+                .then(response => response.json())
+                .then(data => {
+                    resultList.innerHTML = ''; // Clear the previous results
 
-            // Draw the 500m radius circle
-            activeCircle = L.circle([lat, lng], {
-                color: 'blue',
-                fillColor: '#a3c9ff',
-                fillOpacity: 0.3,
-                radius: radius
-            }).addTo(map);
+                    // Draw the 500m radius circle
+                    activeCircle = L.circle([lat, lng], {
+                        color: 'blue',
+                        fillColor: '#a3c9ff',
+                        fillOpacity: 0.3,
+                        radius: radius
+                    }).addTo(map);
 
-            // Draw the detected area if any
-            if (data.area) {
-                activeArea = L.geoJSON(data.area, {
-                    style: { color: 'purple', fillOpacity: 0.2 }
-                }).addTo(map);
-            }
-
-            // Sort features by distance in ascending order
-            const sortedFeatures = data.features.sort(
-                (a, b) => a.properties.distance_to_home - b.properties.distance_to_home
-            );
-
-            // Function to filter and display results based on checkboxes
-            function filterResults() {
-                const showPublics = document.getElementById('filter-publics').checked;
-                const showConcertats = document.getElementById('filter-concertats').checked;
-
-                // Clear current markers and list
-                activeMarkers.forEach(marker => map.removeLayer(marker));
-                activeMarkers = [];
-                resultList.innerHTML = '';
-
-                sortedFeatures.forEach(feature => {
-                    const coords = feature.geometry.coordinates;
-                    const titularitat = feature.properties["nom_titularitat"];
-                    const naturalesa = feature.properties["nom_naturalesa"];
-                    const distance = feature.properties["distance_to_home"]; // Get distance from backend
-
-                    // Apply filters
-                    const isPublic = naturalesa === "Públic";
-                    if ((isPublic && !showPublics) || (!isPublic && !showConcertats)) {
-                        return; // Skip this feature if it doesn't match the filter
+                    // Draw the detected area if any
+                    if (data.area) {
+                        activeArea = L.geoJSON(data.area, {
+                            style: { color: 'purple', fillOpacity: 0.2 }
+                        }).addTo(map);
                     }
 
-                    // Determine marker color
-                    const markerColor = isPublic ? "blue" : "green";
+                    // Sort features by distance in ascending order
+                    const sortedFeatures = data.features.sort(
+                        (a, b) => a.properties.distance_to_home - b.properties.distance_to_home
+                    );
 
-                    // Create a marker with the color-coded icon
-                    const marker = L.circleMarker([coords[1], coords[0]], {
-                        radius: 8,
-                        fillColor: markerColor,
-                        color: markerColor,
-                        weight: 1,
-                        fillOpacity: 0.8
-                    })
-                    .bindPopup(`
-                        <strong>${feature.properties["denominaci_completa"]}</strong><br>
-                        Titularitat: ${titularitat || "Unknown"}<br>
-                        Adreça: ${feature.properties["adre_a"]}<br>
-                        Distance: ${distance.toFixed(2)} meters
-                    `);
+                    // Function to filter and display results based on checkboxes
+                    function filterResults() {
+                        const showPublics = document.getElementById('filter-publics').checked;
+                        const showConcertats = document.getElementById('filter-concertats').checked;
 
-                    marker.addTo(map);
-                    activeMarkers.push(marker);
+                        // Clear current markers and list
+                        activeMarkers.forEach(marker => map.removeLayer(marker));
+                        activeMarkers = [];
+                        resultList.innerHTML = '';
 
-                    // Add to the results list
-                    const resultItem = document.createElement('div');
-                    resultItem.className = 'result-item';
-                    resultItem.innerHTML = `
-                        <div class="result-title">${feature.properties["denominaci_completa"]}</div>
-                        <div>Titularitat: ${titularitat || "Unknown"}</div>
-                        <div>Adreça: ${feature.properties["adre_a"]}</div>
-                        <div>Distance: ${distance.toFixed(2)} meters</div>
-                    `;
+                        sortedFeatures.forEach(feature => {
+                            const coords = feature.geometry.coordinates;
+                            const titularitat = feature.properties["nom_titularitat"];
+                            const naturalesa = feature.properties["nom_naturalesa"];
+                            const distance = feature.properties["distance_to_home"]; // Get distance from backend
 
-                    // Center map on marker when result item is clicked
-                    resultItem.addEventListener('click', () => {
-                        map.setView([coords[1], coords[0]], 15);
-                        marker.openPopup();
-                    });
+                            // Apply filters
+                            const isPublic = naturalesa === "Públic";
+                            if ((isPublic && !showPublics) || (!isPublic && !showConcertats)) {
+                                return; // Skip this feature if it doesn't match the filter
+                            }
 
-                    resultList.appendChild(resultItem);
+                            // Determine marker color
+                            const markerColor = isPublic ? "blue" : "green";
+
+                            // Create a marker with the color-coded icon
+                            const marker = L.circleMarker([coords[1], coords[0]], {
+                                radius: 8,
+                                fillColor: markerColor,
+                                color: markerColor,
+                                weight: 1,
+                                fillOpacity: 0.8
+                            })
+                            .bindPopup(`
+                                <strong>${feature.properties["denominaci_completa"]}</strong><br>
+                                Titularitat: ${titularitat || "Unknown"}<br>
+                                Adreça: ${feature.properties["adre_a"]}<br>
+                                Distance: ${distance.toFixed(2)} meters
+                            `);
+
+                            marker.addTo(map);
+                            activeMarkers.push(marker);
+
+                            // Add to the results list
+                            const resultItem = document.createElement('div');
+                            resultItem.className = 'result-item';
+                            resultItem.innerHTML = `
+                                <div class="result-title">${feature.properties["denominaci_completa"]}</div>
+                                <div>Titularitat: ${titularitat || "Unknown"}</div>
+                                <div>Adreça: ${feature.properties["adre_a"]}</div>
+                                <div>Distance: ${distance.toFixed(2)} meters</div>
+                            `;
+
+                            // Center map on marker when result item is clicked
+                            resultItem.addEventListener('click', () => {
+                                map.setView([coords[1], coords[0]], 15);
+                                marker.openPopup();
+
+                                // Display time series chart for remaining places
+                                displayChart(feature.properties["remaining_places"]);
+                            });
+
+                            resultList.appendChild(resultItem);
+                        });
+
+                        // If no features match the filter, show a message
+                        if (!resultList.children.length) {
+                            resultList.innerHTML = '<p>No results found.</p>';
+                        }
+                    }
+
+                    // Attach event listeners to checkboxes
+                    document.getElementById('filter-publics').addEventListener('change', filterResults);
+                    document.getElementById('filter-concertats').addEventListener('change', filterResults);
+
+                    // Initial render with filters applied
+                    filterResults();
                 });
+        }
 
-                // If no features match the filter, show a message
-                if (!resultList.children.length) {
-                    resultList.innerHTML = '<p>No results found.</p>';
-                }
+        let currentChart = null;  // Variable to store the current chart instance
+
+        function displayChart(remainingPlaces) {
+            const ctx = document.getElementById('remainingPlacesChart').getContext('2d');
+
+            // Destroy the current chart if it exists
+            if (currentChart) {
+                currentChart.destroy();
             }
 
-            // Attach event listeners to checkboxes
-            document.getElementById('filter-publics').addEventListener('change', filterResults);
-            document.getElementById('filter-concertats').addEventListener('change', filterResults);
+            const dates = remainingPlaces.map(item => item[0]);
+            const places = remainingPlaces.map(item => item[1]);
 
-            // Initial render with filters applied
-            filterResults();
-        });
-}
+            // Create a new chart
+            currentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: 'Places Remaining',
+                        data: places,
+                        borderColor: 'rgb(75, 192, 192)',
+                        fill: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'category',
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Remaining Places'
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
 
 
         // Handle map click event
@@ -265,3 +328,5 @@ function fetchAndDisplayNearbyMarkers(lat, lng) {
     </script>
 </body>
 </html>
+
+

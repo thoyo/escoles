@@ -1,7 +1,13 @@
 import json
+import os
+import psycopg2
 from flask import Flask, request, jsonify, send_from_directory
 from geopy.distance import geodesic
 from shapely.geometry import shape, Point
+from dotenv import load_dotenv
+import datetime
+
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -11,6 +17,20 @@ with open("filtered_data.geojson", "r") as f:
 
 with open("areas.geojson", "r") as f:
     areas_data = json.load(f)
+
+if os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False):
+    POSTGRES_HOST = "postgres"
+else:
+    POSTGRES_HOST = "localhost"
+
+db_config = {
+    "host": POSTGRES_HOST,
+    "port": "5432",
+    "database": "postgres_db",
+    "user": "postgres_usr",
+    "password": os.getenv("POSTGRES_PASSWORD")
+}
+
 
 
 # Helper function to calculate distance and find nearby features
@@ -102,8 +122,42 @@ def find_features(lat, lng, radius=500):
         for feature, _ in extra_concertats:
             all_features[feature["properties"]["codi_centre"]] = feature
 
+    # Connect to the database
+    connection = psycopg2.connect(**db_config)
+    cursor = connection.cursor()
     for feature in all_features.values():
         log_details.append(f"Feature {feature['properties']['denominaci_completa']} is part of the final result set.")
+
+        query = f"""
+            SELECT 
+                year AS time, 
+                (places_ofertades - assignacions_en_primera) AS remaining_places
+            FROM 
+                school_assignments
+            WHERE 
+                codi_centre = '{feature['properties']['codi_centre'].lstrip("0")}'
+            ORDER BY 
+                time
+        """
+
+        try:
+            # Execute the query
+            cursor.execute(query)
+            results = cursor.fetchall()
+            # Convert the query results to a list of tuples with the year as a date string
+            formatted_results = [
+                (datetime.date(year=item[0].year, month=9, day=1).isoformat(), item[1])  # Set to September 1st
+                for item in results
+            ]
+
+            all_features[feature['properties']['codi_centre']]['properties']['remaining_places'] = formatted_results
+        except Exception as e:
+            print(f"Error: {e}")
+
+    if cursor:
+        cursor.close()
+    if connection:
+        connection.close()
 
     # Print logs to the terminal
     for log in log_details:
