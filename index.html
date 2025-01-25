@@ -71,7 +71,7 @@
             background-color: #e9ecef;  /* Light background color for selected item */
             opacity: 0.7;  /* Slightly dim the opacity */
         }
-        
+
         /* Ensure the map remains visible on vertical screens */
         @media (max-width: 768px) {
             #map {
@@ -164,6 +164,7 @@
         let currentChart = null;  // Variable to store the current chart instance
         let allPlots = [];  // Store plots for all items
 
+        // Function to display all plots
         function displayAllPlots(remainingPlacesData, features) {
             const ctx = document.getElementById('remainingPlacesChart').getContext('2d');
 
@@ -172,22 +173,20 @@
                 currentChart.destroy();
             }
 
-            // Prepare datasets for all the items with their full names in the legend
-            allPlots = remainingPlacesData.map((data, index) => {
-                return {
-                    label: features[index].properties["denominaci_completa"],  // Use full name as the label
-                    data: data.map(item => item[1]),
-                    borderColor: getRandomColor(),
-                    fill: false,
-                };
-            });
+            const dates = remainingPlacesData[0].map(item => item[0]); // Assuming same dates for all features
+            const datasets = features.map((feature, index) => ({
+                label: feature.properties["denominaci_completa"],
+                data: remainingPlacesData[index].map(item => item[1]),
+                borderColor: `rgb(${(index * 60) % 255}, ${(index * 100) % 255}, ${(index * 150) % 255})`,
+                fill: false,
+            }));
 
-            // Create a new chart with all datasets
+            // Create a new chart with all plots
             currentChart = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: remainingPlacesData[0].map(item => item[0]),  // Assume all items share the same dates
-                    datasets: allPlots
+                    labels: dates,
+                    datasets: datasets
                 },
                 options: {
                     responsive: true,
@@ -210,7 +209,6 @@
                 }
             });
         }
-
         // Get random color for each dataset
         function getRandomColor() {
             const letters = '0123456789ABCDEF';
@@ -273,6 +271,9 @@
                     );
 
                     // Function to filter and display results based on checkboxes
+                    let currentlySelectedItem = null;  // Variable to track the currently selected item
+                    let allPlotsDisplayed = false;  // Variable to track if all plots are being displayed
+
                     function filterResults() {
                         const showPublics = document.getElementById('filter-publics').checked;
                         const showConcertats = document.getElementById('filter-concertats').checked;
@@ -327,21 +328,46 @@
                                 <div>Distance: ${distance.toFixed(2)} meters</div>
                             `;
 
-                            // Handle item selection
+                            // Handle item selection or unselection
                             resultItem.addEventListener('click', () => {
-                                // Remove 'selected' class from all items
-                                const allResultItems = document.querySelectorAll('.result-item');
-                                allResultItems.forEach(item => item.classList.remove('selected'));
+                                if (currentlySelectedItem === resultItem) {
+                                    // If the item is already selected, unselect it
+                                    resultItem.classList.remove('selected');
+                                    currentlySelectedItem = null;
 
-                                // Add the 'selected' class to the clicked item
-                                resultItem.classList.add('selected');
+                                    // Show all plots again
+                                    displayAllPlots(filteredFeatures.map(feature => feature.properties.remaining_places), filteredFeatures);
+                                    allPlotsDisplayed = true;
+
+                                    // Deselect on the map
+                                    activeMarkers.forEach(marker => marker.setStyle({ opacity: 1 }));
+
+                                } else {
+                                    // If this item is not selected, select it
+                                    if (currentlySelectedItem) {
+                                        // Deselect the previous item
+                                        currentlySelectedItem.classList.remove('selected');
+                                    }
+
+                                    // Select the clicked item
+                                    resultItem.classList.add('selected');
+                                    currentlySelectedItem = resultItem;
+
+                                    // Show only this item's plot
+                                    displayChart(feature.properties["remaining_places"]);
+                                    allPlotsDisplayed = false;
+
+                                    // Highlight the item on the map by reducing opacity of others
+                                    activeMarkers.forEach(marker => {
+                                        if (marker !== resultItem.marker) {
+                                            marker.setStyle({ opacity: 0.3 }); // Dim other markers
+                                        }
+                                    });
+                                }
 
                                 // Center map on marker when result item is clicked
                                 map.setView([coords[1], coords[0]], 15);
                                 marker.openPopup();
-
-                                // Display time series chart for remaining places
-                                displayChart(feature.properties["remaining_places"]);
                             });
 
                             resultList.appendChild(resultItem);
@@ -354,7 +380,9 @@
 
                         // Update the plots with filtered data
                         const remainingPlacesData = filteredFeatures.map(feature => feature.properties.remaining_places);
-                        displayAllPlots(remainingPlacesData, filteredFeatures);
+                        if (allPlotsDisplayed) {
+                            displayAllPlots(remainingPlacesData, filteredFeatures);
+                        }
                     }
 
                     // Attach event listeners to checkboxes
