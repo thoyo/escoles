@@ -2,28 +2,33 @@
 * ~~display the 500m radius~~
 * ~~color code public and concertated schools~~
 * ~~display the areas~~
-* add timeseries about
-  * requests
-  * offers
-  * requests/offers
-* add other info about surrounding
-  * distance to park
-  * pollution
-  * noise level
-* improve placemarks
-* unittest that asserts equal results as in https://www.edubcn.cat/ca/alumnat_i_familia/informacio_general_matriculacio/arees_influencia/consulta_de_centres_educatius#/centres/... 
-* ~~add placemark for home~~
-* ~~show "list" view alongside the map~~
-* ~~add also checking for at least 6 centers of each type~~
-* remove non barcelonian areas
-* ~~log activity to postgres~~
-* ~~setup grafana for observability~~
-* warn about clicking outside barcelona
-* ~~dont make the url with trailing slash fail~~
+* add in item details (map and list) 
+  * remaining spots last year
+  * forecast of remaining spots this year
+  * total spots
+* allow sorting by the previous fields
+* make the timeseries rounded
+* remove non barcelonian areas and warn about clicking outside barcelona
 * remove private centers
 * add email and website of the center
 * hyperlink with link to google maps the address to the center
 * lint the frontend
+* add timeseries about
+  * requests
+  * offers
+  * requests/offers
+  * ~~remaining spots~~
+* add other info about surrounding
+  * distance to park
+  * pollution
+  * noise level
+* unittest that asserts equal results as in https://www.edubcn.cat/ca/alumnat_i_familia/informacio_general_matriculacio/arees_influencia/consulta_de_centres_educatius#/centres/... 
+* ~~add placemark for home~~
+* ~~show "list" view alongside the map~~
+* ~~add also checking for at least 6 centers of each type~~
+* ~~log activity to postgres~~
+* ~~setup grafana for observability~~
+* ~~dont make the url with trailing slash fail~~
 
 # refs
   * https://educacio.gencat.cat/web/.content/home/arees-actuacio/centres-serveis-educatius/centres/directori-centres/codisnivellseducatius.pdf
