@@ -272,43 +272,33 @@
                         const showPublics = document.getElementById('filter-publics').checked;
                         const showConcertats = document.getElementById('filter-concertats').checked;
 
-                        // Clear current markers and list
+                        // Clear the map and the list
                         activeMarkers.forEach(marker => map.removeLayer(marker));
                         activeMarkers = [];
                         resultList.innerHTML = '';
 
-                        const remainingPlacesData = [];
+                        // Filter the features and prepare the list
+                        const filteredFeatures = sortedFeatures.filter(feature => {
+                            const naturalesa = feature.properties["nom_naturalesa"];
+                            const isPublic = naturalesa === "Públic";
+                            return (isPublic && showPublics) || (!isPublic && showConcertats);
+                        });
 
-                        sortedFeatures.forEach(feature => {
+                        // Re-add filtered markers and items to the list
+                        filteredFeatures.forEach(feature => {
                             const coords = feature.geometry.coordinates;
                             const titularitat = feature.properties["nom_titularitat"];
                             const naturalesa = feature.properties["nom_naturalesa"];
                             const distance = feature.properties["distance_to_home"]; // Get distance from backend
 
-                            // Apply filters
-                            const isPublic = naturalesa === "Públic";
-                            if ((isPublic && !showPublics) || (!isPublic && !showConcertats)) {
-                                return; // Skip this feature if it doesn't match the filter
-                            }
+                            // Determine marker color
+                            const markerColor = naturalesa === "Públic" ? "blue" : "green";
 
-                            // Add to the results list
-                            const resultItem = document.createElement('div');
-                            resultItem.className = 'result-item';
-                            resultItem.innerHTML = `
-                                <div class="result-title">${feature.properties["denominaci_completa"]}</div>
-                                <div>Titularitat: ${titularitat || "Unknown"}</div>
-                                <div>Adreça: ${feature.properties["adre_a"]}</div>
-                                <div>Distance: ${distance.toFixed(2)} meters</div>
-                            `;
-
-                            // Add data to the remainingPlacesData
-                            remainingPlacesData.push(feature.properties["remaining_places"]);
-
-                            // Create a marker and add event listener to toggle plot on click
+                            // Create a marker with the color-coded icon
                             const marker = L.circleMarker([coords[1], coords[0]], {
                                 radius: 8,
-                                fillColor: isPublic ? "blue" : "green",
-                                color: isPublic ? "blue" : "green",
+                                fillColor: markerColor,
+                                color: markerColor,
                                 weight: 1,
                                 fillOpacity: 0.8
                             })
@@ -322,12 +312,23 @@
                             marker.addTo(map);
                             activeMarkers.push(marker);
 
+                            // Add to the results list
+                            const resultItem = document.createElement('div');
+                            resultItem.className = 'result-item';
+                            resultItem.innerHTML = `
+                                <div class="result-title">${feature.properties["denominaci_completa"]}</div>
+                                <div>Titularitat: ${titularitat || "Unknown"}</div>
+                                <div>Adreça: ${feature.properties["adre_a"]}</div>
+                                <div>Distance: ${distance.toFixed(2)} meters</div>
+                            `;
+
+                            // Center map on marker when result item is clicked
                             resultItem.addEventListener('click', () => {
                                 map.setView([coords[1], coords[0]], 15);
                                 marker.openPopup();
 
-                                // Handle plot toggling for this item
-                                handleItemClick(activeMarkers.length - 1);
+                                // Display time series chart for remaining places
+                                displayChart(feature.properties["remaining_places"]);
                             });
 
                             resultList.appendChild(resultItem);
@@ -338,9 +339,11 @@
                             resultList.innerHTML = '<p>No results found.</p>';
                         }
 
-                        // Display all plots when results are fetched
-                        displayAllPlots(remainingPlacesData, data.features);
+                        // Update the plots with filtered data
+                        const remainingPlacesData = filteredFeatures.map(feature => feature.properties.remaining_places);
+                        displayAllPlots(remainingPlacesData, filteredFeatures);
                     }
+
 
                     // Attach event listeners to checkboxes
                     document.getElementById('filter-publics').addEventListener('change', filterResults);
