@@ -209,6 +209,7 @@
                 }
             });
         }
+
         // Get random color for each dataset
         function getRandomColor() {
             const letters = '0123456789ABCDEF';
@@ -272,7 +273,8 @@
 
                     // Function to filter and display results based on checkboxes
                     let currentlySelectedItem = null;  // Variable to track the currently selected item
-                    let allPlotsDisplayed = false;  // Variable to track if all plots are being displayed
+
+                    let allPlotsDisplayed = true;  // Set this to true to show all plots initially
 
                     function filterResults() {
                         const showPublics = document.getElementById('filter-publics').checked;
@@ -380,10 +382,12 @@
 
                         // Update the plots with filtered data
                         const remainingPlacesData = filteredFeatures.map(feature => feature.properties.remaining_places);
+
                         if (allPlotsDisplayed) {
                             displayAllPlots(remainingPlacesData, filteredFeatures);
                         }
                     }
+
 
                     // Attach event listeners to checkboxes
                     document.getElementById('filter-publics').addEventListener('change', filterResults);
