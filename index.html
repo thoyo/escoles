@@ -159,8 +159,7 @@
         let currentChart = null;  // Variable to store the current chart instance
         let allPlots = [];  // Store plots for all items
 
-        // Function to display the plots for all items initially
-        function displayAllPlots(remainingPlacesData) {
+        function displayAllPlots(remainingPlacesData, features) {
             const ctx = document.getElementById('remainingPlacesChart').getContext('2d');
 
             // Destroy the current chart if it exists
@@ -168,10 +167,10 @@
                 currentChart.destroy();
             }
 
-            // Prepare datasets for all the items
+            // Prepare datasets for all the items with their full names in the legend
             allPlots = remainingPlacesData.map((data, index) => {
                 return {
-                    label: `Item ${index + 1}`,  // Use item number or any other unique identifier
+                    label: features[index].properties["denominaci_completa"],  // Use full name as the label
                     data: data.map(item => item[1]),
                     borderColor: getRandomColor(),
                     fill: false,
@@ -340,7 +339,7 @@
                         }
 
                         // Display all plots when results are fetched
-                        displayAllPlots(remainingPlacesData);
+                        displayAllPlots(remainingPlacesData, data.features);
                     }
 
                     // Attach event listeners to checkboxes
