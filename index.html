@@ -67,6 +67,11 @@
             font-weight: bold;
         }
 
+        .selected {
+            background-color: #e9ecef;  /* Light background color for selected item */
+            opacity: 0.7;  /* Slightly dim the opacity */
+        }
+        
         /* Ensure the map remains visible on vertical screens */
         @media (max-width: 768px) {
             #map {
@@ -322,8 +327,16 @@
                                 <div>Distance: ${distance.toFixed(2)} meters</div>
                             `;
 
-                            // Center map on marker when result item is clicked
+                            // Handle item selection
                             resultItem.addEventListener('click', () => {
+                                // Remove 'selected' class from all items
+                                const allResultItems = document.querySelectorAll('.result-item');
+                                allResultItems.forEach(item => item.classList.remove('selected'));
+
+                                // Add the 'selected' class to the clicked item
+                                resultItem.classList.add('selected');
+
+                                // Center map on marker when result item is clicked
                                 map.setView([coords[1], coords[0]], 15);
                                 marker.openPopup();
 
@@ -343,7 +356,6 @@
                         const remainingPlacesData = filteredFeatures.map(feature => feature.properties.remaining_places);
                         displayAllPlots(remainingPlacesData, filteredFeatures);
                     }
-
 
                     // Attach event listeners to checkboxes
                     document.getElementById('filter-publics').addEventListener('change', filterResults);
