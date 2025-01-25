@@ -156,6 +156,92 @@
             resultList.innerHTML = '<p>No results found.</p>'; // Clear result list
         }
 
+        let currentChart = null;  // Variable to store the current chart instance
+        let allPlots = [];  // Store plots for all items
+
+        // Function to display the plots for all items initially
+        function displayAllPlots(remainingPlacesData) {
+            const ctx = document.getElementById('remainingPlacesChart').getContext('2d');
+
+            // Destroy the current chart if it exists
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            // Prepare datasets for all the items
+            allPlots = remainingPlacesData.map((data, index) => {
+                return {
+                    label: `Item ${index + 1}`,  // Use item number or any other unique identifier
+                    data: data.map(item => item[1]),
+                    borderColor: getRandomColor(),
+                    fill: false,
+                };
+            });
+
+            // Create a new chart with all datasets
+            currentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: remainingPlacesData[0].map(item => item[0]),  // Assume all items share the same dates
+                    datasets: allPlots
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        x: {
+                            type: 'category',
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Remaining Places'
+                            },
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // Get random color for each dataset
+        function getRandomColor() {
+            const letters = '0123456789ABCDEF';
+            let color = '#';
+            for (let i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        // Function to handle item click and toggle visibility of the plot for that item
+        function handleItemClick(index) {
+            // Toggle visibility for the selected plot
+            const dataset = currentChart.data.datasets[index];
+            dataset.hidden = !dataset.hidden;  // Toggle visibility
+
+            // If the dataset is hidden, only show the selected plot, otherwise show all plots
+            if (dataset.hidden) {
+                // Hide all other plots
+                currentChart.data.datasets.forEach((data, idx) => {
+                    if (idx !== index) {
+                        data.hidden = true;
+                    }
+                });
+            } else {
+                // Show all plots
+                currentChart.data.datasets.forEach((data, idx) => {
+                    data.hidden = false;
+                });
+            }
+
+            // Update the chart
+            currentChart.update();
+        }
+
         function fetchAndDisplayNearbyMarkers(lat, lng) {
             const radius = 500; // Radius in meters
             fetch(`/projects/escoles/nearby?lat=${lat}&lng=${lng}&radius=${radius}`)
@@ -178,7 +264,6 @@
                         }).addTo(map);
                     }
 
-                    // Sort features by distance in ascending order
                     const sortedFeatures = data.features.sort(
                         (a, b) => a.properties.distance_to_home - b.properties.distance_to_home
                     );
@@ -193,6 +278,8 @@
                         activeMarkers = [];
                         resultList.innerHTML = '';
 
+                        const remainingPlacesData = [];
+
                         sortedFeatures.forEach(feature => {
                             const coords = feature.geometry.coordinates;
                             const titularitat = feature.properties["nom_titularitat"];
@@ -205,14 +292,24 @@
                                 return; // Skip this feature if it doesn't match the filter
                             }
 
-                            // Determine marker color
-                            const markerColor = isPublic ? "blue" : "green";
+                            // Add to the results list
+                            const resultItem = document.createElement('div');
+                            resultItem.className = 'result-item';
+                            resultItem.innerHTML = `
+                                <div class="result-title">${feature.properties["denominaci_completa"]}</div>
+                                <div>Titularitat: ${titularitat || "Unknown"}</div>
+                                <div>Adreça: ${feature.properties["adre_a"]}</div>
+                                <div>Distance: ${distance.toFixed(2)} meters</div>
+                            `;
 
-                            // Create a marker with the color-coded icon
+                            // Add data to the remainingPlacesData
+                            remainingPlacesData.push(feature.properties["remaining_places"]);
+
+                            // Create a marker and add event listener to toggle plot on click
                             const marker = L.circleMarker([coords[1], coords[0]], {
                                 radius: 8,
-                                fillColor: markerColor,
-                                color: markerColor,
+                                fillColor: isPublic ? "blue" : "green",
+                                color: isPublic ? "blue" : "green",
                                 weight: 1,
                                 fillOpacity: 0.8
                             })
@@ -226,23 +323,12 @@
                             marker.addTo(map);
                             activeMarkers.push(marker);
 
-                            // Add to the results list
-                            const resultItem = document.createElement('div');
-                            resultItem.className = 'result-item';
-                            resultItem.innerHTML = `
-                                <div class="result-title">${feature.properties["denominaci_completa"]}</div>
-                                <div>Titularitat: ${titularitat || "Unknown"}</div>
-                                <div>Adreça: ${feature.properties["adre_a"]}</div>
-                                <div>Distance: ${distance.toFixed(2)} meters</div>
-                            `;
-
-                            // Center map on marker when result item is clicked
                             resultItem.addEventListener('click', () => {
                                 map.setView([coords[1], coords[0]], 15);
                                 marker.openPopup();
 
-                                // Display time series chart for remaining places
-                                displayChart(feature.properties["remaining_places"]);
+                                // Handle plot toggling for this item
+                                handleItemClick(activeMarkers.length - 1);
                             });
 
                             resultList.appendChild(resultItem);
@@ -252,6 +338,9 @@
                         if (!resultList.children.length) {
                             resultList.innerHTML = '<p>No results found.</p>';
                         }
+
+                        // Display all plots when results are fetched
+                        displayAllPlots(remainingPlacesData);
                     }
 
                     // Attach event listeners to checkboxes
@@ -262,8 +351,6 @@
                     filterResults();
                 });
         }
-
-        let currentChart = null;  // Variable to store the current chart instance
 
         function displayChart(remainingPlaces) {
             const ctx = document.getElementById('remainingPlacesChart').getContext('2d');
