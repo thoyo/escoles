@@ -13,6 +13,7 @@
 * add email and website of the center
 * hyperlink with link to google maps the address to the center
 * lint the frontend
+* add label with school name on the map always
 * add timeseries about
   * requests
   * offers
