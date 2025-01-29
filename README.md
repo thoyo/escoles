@@ -41,6 +41,8 @@
     * Missing centers (e.g says that "Cargol" is only for adults)
   * https://analisi.transparenciacatalunya.cat/Educaci-/Directori-de-centres-docents-anual-Base-2020/kvmv-ahh4/about_data
     * Wrong coords (e.g for Sadako)
+  * http://mapaescolar.gencat.cat/
+    * Exported xls contains a CSV that differentiates between concertated and private schools
 
 # [assignations_data](assignations_data)
 Data extracted from https://glorialangreo.com/schools/

@@ -6,7 +6,9 @@ import pandas as pd
 from sqlalchemy import create_engine
 import re
 from datetime import datetime
+import pprint
 
+pp = pprint.PrettyPrinter(indent=4)
 
 def filter_geojson():
     with open("data.geojson", "r") as f:
@@ -23,6 +25,21 @@ def filter_geojson():
         "type": "FeatureCollection",
         "features": filtered_features,
     }
+
+    # Disambiguate if public, concertat or privat from the xls file (the geojson has only either public, or others),
+    # and drop privates
+    filtered_features = []
+    df = pd.read_excel('inventory.xls')
+    for feature in filtered_geojson["features"]:
+        nom_naturalesa = df[df["Codi del centre"] == int(feature["properties"]["codi_centre"])]["Nom naturalesa"]
+        if len(nom_naturalesa) > 0:
+            feature["properties"]["nom_naturalesa"] = nom_naturalesa.iloc[0]
+        else:
+            pp.pprint(f"Feature {feature} not found in the xls file")
+        if feature["properties"]["nom_naturalesa"] != "Privat":
+            filtered_features.append(feature)
+
+    filtered_geojson["features"] = filtered_features
 
     # Save the filtered GeoJSON to the output file
     with open("filtered_data.geojson", "w") as f:

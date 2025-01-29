@@ -73,7 +73,7 @@ def find_features(lat, lng, radius=500):
         naturalesa = feature["properties"].get("nom_naturalesa", "")
         if naturalesa == "Públic":
             edu_features.append((feature, distance))
-        else:
+        elif naturalesa == "Concertat":
             non_edu_features.append((feature, distance))
 
     # Els 3 centres públics i 3 centres concertats més propers al domicili.
@@ -107,7 +107,7 @@ def find_features(lat, lng, radius=500):
     for feature in all_features.values():
         if feature["properties"]["nom_naturalesa"] == "Públic":
             publics += 1
-        else:
+        elif naturalesa == "Concertat":
             concertats += 1
         feature_coords = (feature["geometry"]["coordinates"][1], feature["geometry"]["coordinates"][0])
         distance = geodesic(clicked_point, feature_coords).meters
