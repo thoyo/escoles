@@ -11,13 +11,18 @@ import pprint
 pp = pprint.PrettyPrinter(indent=4)
 
 def filter_geojson():
-    with open("data.geojson", "r") as f:
+    with open("data_new.geojson", "r") as f:
         geojson_data = json.load(f)
+
+    with open("data_ok_coords.geojson", "r") as f:
+        data_ok_coords = json.load(f)
 
     # Filter features where "Nom municipi" equals "Barcelona"
     filtered_features = [
         feature for feature in geojson_data["features"]
-        if feature["properties"].get("nom_municipi") == "Barcelona" and "EINF2C EPRI" in feature["properties"].get("estudis")
+        if feature["properties"].get("nom_municipi") == "Barcelona" and
+           feature["properties"].get("einf2c") == "EINF2C" and
+           feature["properties"].get("epri") == "EPRI"
     ]
 
     # Create a new GeoJSON object with the filtered features
@@ -31,19 +36,47 @@ def filter_geojson():
     filtered_features = []
     df = pd.read_excel('inventory.xls')
     for feature in filtered_geojson["features"]:
+        if feature["properties"]["curs"] != "2024/2025":
+            continue
         nom_naturalesa = df[df["Codi del centre"] == int(feature["properties"]["codi_centre"])]["Nom naturalesa"]
         if len(nom_naturalesa) > 0:
             feature["properties"]["nom_naturalesa"] = nom_naturalesa.iloc[0]
         else:
-            pp.pprint(f"Feature {feature} not found in the xls file")
+            pp.pprint(f"Feature {feature['properties']['denominaci_completa']} not found in the xls file")
         if feature["properties"]["nom_naturalesa"] != "Privat":
-            filtered_features.append(feature)
+            for feature_ok_coords in data_ok_coords["features"]:
+                if feature_ok_coords["properties"]["CODI_CENTRE"] == feature["properties"]["codi_centre"]:
+                    feature["geometry"]["coordinates"] = feature_ok_coords["geometry"]["coordinates"]
+                    filtered_features.append(feature)
+                    break
 
     filtered_geojson["features"] = filtered_features
 
+    final_data = {"features": []}
+    for feature in filtered_geojson["features"]:
+        final_data["features"].append({
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": feature["geometry"]["coordinates"]
+            },
+            "properties": {
+                "denominaci_completa": feature["properties"]["denominaci_completa"],
+                "codi_centre": feature["properties"]["codi_centre"],
+                "nom_naturalesa": feature["properties"]["nom_naturalesa"],
+                "adre_a": feature["properties"]["adre_a"],
+                "e_mail_centre": feature["properties"]["e_mail_centre"],
+                "url": feature["properties"]["url"],
+                "nom_titularitat": feature["properties"]["nom_titularitat"],
+                "nom_dm": feature["properties"]["nom_dm"],
+                "tel_fon_centre": feature["properties"]["tel_fon"],
+                "codi_postal": feature["properties"]["codi_postal"],
+            }
+        })
+
     # Save the filtered GeoJSON to the output file
     with open("filtered_data.geojson", "w") as f:
-        json.dump(filtered_geojson, f)
+        json.dump(final_data, f)
 
 
 def show_areas():

@@ -39,10 +39,17 @@
   * http://mapaescolar.gencat.cat/index.html
   * https://analisi.transparenciacatalunya.cat/Educaci-/Directori-de-centres-docents-TRA-ACOVID/3u9c-b74b/data_preview
     * Missing centers (e.g says that "Cargol" is only for adults)
+    * Wrong coords (e.g for Coves d'en Cimany, puts it in Calafell instead of in Barcelona)
   * https://analisi.transparenciacatalunya.cat/Educaci-/Directori-de-centres-docents-anual-Base-2020/kvmv-ahh4/about_data
     * Wrong coords (e.g for Sadako)
   * http://mapaescolar.gencat.cat/
     * Exported xls contains a CSV that differentiates between concertated and private schools
+    * Getting good coordinates for all: 
+``` 
+curl 'https://aplicacions.gestioeducativa.gencat.cat/geoserver_2/MOE/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=MOE:MOE_OFERTA_VM&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG:4326&CQL_FILTER=(1%3D1)%20AND%20(CODI_SERVEI_TERRITORIAL%20IN%20(%270108%27))%20AND%20(CURS%20IN%20(%272024%27))' --compressed -o result.geojson
+```
+
 
 # [assignations_data](assignations_data)
 Data extracted from https://glorialangreo.com/schools/
+
