@@ -9,7 +9,7 @@
 * allow sorting by the previous fields
 * make the timeseries rounded
 * remove non barcelonian areas and warn about clicking outside barcelona
-* remove private centers
+* ~~remove private centers~~
 * add email and website of the center
 * hyperlink with link to google maps the address to the center
 * lint the frontend
@@ -46,7 +46,7 @@
     * Exported xls contains a CSV that differentiates between concertated and private schools
     * Getting good coordinates for all: 
 ``` 
-curl 'https://aplicacions.gestioeducativa.gencat.cat/geoserver_2/MOE/wfs?SERVICE=WFS&VERSION=2.0.0&REQUEST=GetFeature&TYPENAMES=MOE:MOE_OFERTA_VM&OUTPUTFORMAT=application%2Fjson&SRSNAME=EPSG:4326&CQL_FILTER=(1%3D1)%20AND%20(CODI_SERVEI_TERRITORIAL%20IN%20(%270108%27))%20AND%20(CURS%20IN%20(%272024%27))' --compressed -o result.geojson
+
 ```
 
 
