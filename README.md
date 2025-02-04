@@ -4,20 +4,19 @@
 * ~~display the areas~~
 * add choice selector that allows to choose between
   * showing centers for which max points will be obtained
-  * showing centers at less than given distance (and add slider to select dist, from 0 to inf)
+  * showing centers at less than given distance (and add slider to select dist, from 0 to inf). And add privates in this case
 * add school name on marker
 * load postgres creds from env
 * add in item details (map and list) 
-  * remaining spots last year
+  * ~~remaining spots last year~~
   * forecast of remaining spots this year
-  * total spots
-  * 
+  * ~~total spots~~
 * allow sorting by the previous fields
 * make the timeseries rounded
 * remove non barcelonian areas and warn about clicking outside barcelona
 * ~~remove private centers~~
-* add email and website of the center
-* hyperlink with link to google maps the address to the center
+* ~~add email and website of the center~~
+* ~~hyperlink with link to google maps the address to the center~~
 * lint the frontend
 * add label with school name on the map always
 * add timeseries about

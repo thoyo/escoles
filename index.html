@@ -112,14 +112,14 @@
         <div id="footer">
             Aquesta web mostra els centres educatius (3-12 anys) més propers a un domicili a la ciutat de Barcelona, per als quals s'obtindria la màxima puntuació en la sol·licitud de places. <br>
             Els resultats son aproximats --> <a href="https://www.edubcn.cat/ca/alumnat_i_familia/informacio_general_matriculacio/arees_influencia/consulta_de_centres_educatius#/cerca">Font oficial</a> <br>
-            <a href="https://glorialangreo.com/schools/">Font de les dades d'assignacions</a> <br>
+            <a href="https://glorialangreo.com/schools/">Font de les dades d'assignacions</a> (última actualització curs 2023/24) <br>
             <a href="https://docs.google.com/forms/d/e/1FAIpQLSfljeyu6oEJ_nKNj2SNqEBe_wEvju3hNm5PY_HbxNMPRLvmZg/viewform?usp=header">Comparteix el teu feedback!</a>
         </div>
     </div>
 
     <script>
         // Initialize the map
-        const map = L.map('map').setView([41.3879, 2.16992], 14);
+        const map = L.map('map').setView([41.3879, 2.16992], 13);
 
         // Add OpenStreetMap tiles
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -341,6 +341,7 @@
                                 <div class="result-title">${feature.properties["denominaci_completa"]}</div>
                                 <div>Distància a casa: ${distance.toFixed(2)} metres</div>
                                 <div>Places ofertades el darrer any: ${feature.properties["total_places"]}</div>
+                                <div>Places vacants després de les assigacions el darrer any: ${feature.properties["remaining_places"][feature.properties["remaining_places"].length - 1][1]}</div>
                                 <div>
                                     Adreça:
                                     <a href="${feature.properties["adre_a_maps"]}"
