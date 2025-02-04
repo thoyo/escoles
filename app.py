@@ -131,7 +131,7 @@ def find_features(lat, lng, radius=500):
         query = f"""
             SELECT 
                 year AS time, 
-                (places_ofertades - assignacions_en_primera) AS remaining_places
+                (places_ofertades - assignacions_en_primera - assignacions_altres) AS remaining_places
             FROM 
                 school_assignments
             WHERE 
@@ -150,6 +150,25 @@ def find_features(lat, lng, radius=500):
                 for item in results
             ]
             all_features[feature['properties']['codi_centre']]['properties']['remaining_places'] = formatted_results
+        except Exception as e:
+            print(f"Error: {e}")
+            
+        query = f"""
+           SELECT
+               places_ofertades 
+           FROM
+               school_assignments
+            WHERE 
+                codi_centre = '{feature['properties']['codi_centre'].lstrip("0")}'
+           ORDER BY 
+               year desc
+        """
+        
+        try:
+            # Execute the query
+            cursor.execute(query)
+            results = cursor.fetchall()
+            all_features[feature['properties']['codi_centre']]['properties']['total_places'] = results[0]
         except Exception as e:
             print(f"Error: {e}")
 

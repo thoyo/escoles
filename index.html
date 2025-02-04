@@ -201,7 +201,7 @@
                         y: {
                             title: {
                                 display: true,
-                                text: 'Remaining Places'
+                                text: 'Places vacants'
                             },
                             beginAtZero: true
                         }
@@ -335,6 +335,7 @@
                             resultItem.innerHTML = `
                                 <div class="result-title">${feature.properties["denominaci_completa"]}</div>
                                 <div>Distància a casa: ${distance.toFixed(2)} metres</div>
+                                <div>Places ofertades el darrer any: ${feature.properties["total_places"]}</div>
                                 <div>
                                     Adreça:
                                     <a href="${feature.properties["adre_a_maps"]}"
@@ -443,7 +444,7 @@
                 data: {
                     labels: dates,
                     datasets: [{
-                        label: 'Places Remaining',
+                        label: 'Places vacants',
                         data: places,
                         borderColor: 'rgb(75, 192, 192)',
                         fill: false,
@@ -462,7 +463,7 @@
                         y: {
                             title: {
                                 display: true,
-                                text: 'Remaining Places'
+                                text: 'Places vacants'
                             },
                             beginAtZero: true
                         }
