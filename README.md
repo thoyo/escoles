@@ -2,10 +2,16 @@
 * ~~display the 500m radius~~
 * ~~color code public and concertated schools~~
 * ~~display the areas~~
+* add choice selector that allows to choose between
+  * showing centers for which max points will be obtained
+  * showing centers at less than given distance (and add slider to select dist, from 0 to inf)
+* add school name on marker
+* load postgres creds from env
 * add in item details (map and list) 
   * remaining spots last year
   * forecast of remaining spots this year
   * total spots
+  * 
 * allow sorting by the previous fields
 * make the timeseries rounded
 * remove non barcelonian areas and warn about clicking outside barcelona
@@ -45,9 +51,6 @@
   * http://mapaescolar.gencat.cat/
     * Exported xls contains a CSV that differentiates between concertated and private schools
     * Getting good coordinates for all: 
-``` 
-
-```
 
 
 # [assignations_data](assignations_data)

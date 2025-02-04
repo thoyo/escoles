@@ -149,7 +149,6 @@ def find_features(lat, lng, radius=500):
                 (datetime.date(year=item[0].year, month=9, day=1).isoformat(), item[1])  # Set to September 1st
                 for item in results
             ]
-
             all_features[feature['properties']['codi_centre']]['properties']['remaining_places'] = formatted_results
         except Exception as e:
             print(f"Error: {e}")

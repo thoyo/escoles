@@ -312,9 +312,18 @@
                             })
                             .bindPopup(`
                                 <strong>${feature.properties["denominaci_completa"]}</strong><br>
+                                Distància a casa: ${distance.toFixed(2)} metres<br>
+                                Adreça: <a href="${feature.properties["adre_a_maps"]}"
+                                          target="_blank"
+                                          rel="noopener noreferrer">
+                                          ${feature.properties["adre_a"]}
+                                        </a><br>
+                                Districte: ${feature.properties["nom_dm"]}<br>
+                                Web: ${feature.properties["url"]}<br>
+                                Email: ${feature.properties["e_mail_centre"]}<br>
+                                Telèfon: ${feature.properties["tel_fon_centre"]}<br>
+                                Tipus: ${feature.properties["nom_naturalesa"]}<br>
                                 Titularitat: ${titularitat || "Unknown"}<br>
-                                Adreça: ${feature.properties["adre_a"]}<br>
-                                Distance: ${distance.toFixed(2)} meters
                             `);
 
                             marker.addTo(map);
@@ -325,9 +334,28 @@
                             resultItem.className = 'result-item';
                             resultItem.innerHTML = `
                                 <div class="result-title">${feature.properties["denominaci_completa"]}</div>
+                                <div>Distància a casa: ${distance.toFixed(2)} metres</div>
+                                <div>
+                                    Adreça:
+                                    <a href="${feature.properties["adre_a_maps"]}"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                       ${feature.properties["adre_a"]}
+                                    </a>
+                                </div>
+                                <div>Districte: ${feature.properties["nom_dm"]}</div>
+                                <div>
+                                    Web:
+                                    <a href="${feature.properties["url"]}"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                       ${feature.properties["url"]}
+                                    </a>
+                                </div>
+                                <div>Email: ${feature.properties["e_mail_centre"]}</div>
+                                <div>Telèfon: ${feature.properties["tel_fon_centre"]}</div>
+                                <div>Tipus: ${feature.properties["nom_naturalesa"]}</div>
                                 <div>Titularitat: ${titularitat || "Unknown"}</div>
-                                <div>Adreça: ${feature.properties["adre_a"]}</div>
-                                <div>Distance: ${distance.toFixed(2)} meters</div>
                             `;
 
                             // Handle item selection or unselection

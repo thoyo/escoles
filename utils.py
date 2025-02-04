@@ -7,8 +7,16 @@ from sqlalchemy import create_engine
 import re
 from datetime import datetime
 import pprint
+import urllib.parse
 
 pp = pprint.PrettyPrinter(indent=4)
+
+
+def generate_google_maps_url(address: str) -> str:
+    base_url = "https://www.google.com/maps/search/"
+    encoded_address = urllib.parse.quote(address)
+    return f"{base_url}{encoded_address}"
+
 
 def filter_geojson():
     with open("data_new.geojson", "r") as f:
@@ -54,6 +62,7 @@ def filter_geojson():
 
     final_data = {"features": []}
     for feature in filtered_geojson["features"]:
+        maps_url = generate_google_maps_url(f'{feature["properties"]["adre_a"]}, {feature["properties"]["codi_postal"]}')
         final_data["features"].append({
             "type": "Feature",
             "geometry": {
@@ -65,6 +74,7 @@ def filter_geojson():
                 "codi_centre": feature["properties"]["codi_centre"],
                 "nom_naturalesa": feature["properties"]["nom_naturalesa"],
                 "adre_a": feature["properties"]["adre_a"],
+                "adre_a_maps": maps_url,
                 "e_mail_centre": feature["properties"]["e_mail_centre"],
                 "url": feature["properties"]["url"],
                 "nom_titularitat": feature["properties"]["nom_titularitat"],
