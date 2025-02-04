@@ -112,6 +112,7 @@
         <div id="footer">
             Aquesta web mostra els centres educatius (3-12 anys) més propers a un domicili a la ciutat de Barcelona, per als quals s'obtindria la màxima puntuació en la sol·licitud de places. <br>
             Els resultats son aproximats --> <a href="https://www.edubcn.cat/ca/alumnat_i_familia/informacio_general_matriculacio/arees_influencia/consulta_de_centres_educatius#/cerca">Font oficial</a> <br>
+            <a href="https://glorialangreo.com/schools/">Dades d'assignacions</a> <br>
             <a href="https://docs.google.com/forms/d/e/1FAIpQLSfljeyu6oEJ_nKNj2SNqEBe_wEvju3hNm5PY_HbxNMPRLvmZg/viewform?usp=header">Comparteix el teu feedback!</a>
         </div>
     </div>
@@ -195,7 +196,7 @@
                             type: 'category',
                             title: {
                                 display: true,
-                                text: 'Date'
+                                text: 'Data'
                             }
                         },
                         y: {
@@ -319,7 +320,11 @@
                                           ${feature.properties["adre_a"]}
                                         </a><br>
                                 Districte: ${feature.properties["nom_dm"]}<br>
-                                Web: ${feature.properties["url"]}<br>
+                                Web: <a href="${feature.properties["url"]}"
+                                       target="_blank"
+                                       rel="noopener noreferrer">
+                                       ${feature.properties["url"]}
+                                    </a><br>
                                 Email: ${feature.properties["e_mail_centre"]}<br>
                                 Telèfon: ${feature.properties["tel_fon_centre"]}<br>
                                 Tipus: ${feature.properties["nom_naturalesa"]}<br>
@@ -385,7 +390,7 @@
                                     currentlySelectedItem = resultItem;
 
                                     // Show only this item's plot
-                                    displayChart(feature.properties["remaining_places"]);
+                                    displayChart(feature, feature.properties["remaining_places"]);
                                     allPlotsDisplayed = false;
 
                                     // Highlight the item on the map by reducing opacity of others
@@ -427,7 +432,7 @@
                 });
         }
 
-        function displayChart(remainingPlaces) {
+        function displayChart(feature, remainingPlaces) {
             const ctx = document.getElementById('remainingPlacesChart').getContext('2d');
 
             // Destroy the current chart if it exists
@@ -444,7 +449,7 @@
                 data: {
                     labels: dates,
                     datasets: [{
-                        label: 'Places vacants',
+                        label: feature.properties.denominaci_completa,
                         data: places,
                         borderColor: 'rgb(75, 192, 192)',
                         fill: false,
@@ -457,7 +462,7 @@
                             type: 'category',
                             title: {
                                 display: true,
-                                text: 'Date'
+                                text: 'Data'
                             }
                         },
                         y: {
