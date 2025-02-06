@@ -15,7 +15,7 @@ app = Flask(__name__)
 with open("filtered_data.geojson", "r") as f:
     geojson_data = json.load(f)
 
-with open("areas.geojson", "r") as f:
+with open("barcelona_areas.geojson", "r") as f:
     areas_data = json.load(f)
 
 if os.environ.get("AM_I_IN_A_DOCKER_CONTAINER", False):
@@ -35,14 +35,13 @@ db_config = {
 
 # Helper function to calculate distance and find nearby features
 def find_features(lat, lng, radius=500):
+
     clicked_point = (lat, lng)
     point_geom = Point(lng, lat)  # Shapely expects (x, y) => (lng, lat)
     nearby_features = []
     edu_features = []
     non_edu_features = []
     area_features = []
-    log_details = []
-    detected_area = None
 
     # Tots els centres públics i concertats de la seva zona
     # Check which area the clicked point belongs to
@@ -50,17 +49,23 @@ def find_features(lat, lng, radius=500):
         area_geom = shape(area["geometry"])  # Create a Shapely geometry
         if area_geom.contains(point_geom):  # Check if the point is inside the area
             detected_area = area
-            log_details.append(f"Clicked point is inside area: {area['id']}")
+            print(f"Clicked point is inside area: {area['id']}")
             break
-    # If a detected area exists, include all its features
-    if detected_area:
-        detected_area_geom = shape(detected_area["geometry"])
-        for feature in geojson_data["features"]:
-            feature_point = Point(feature["geometry"]["coordinates"])  # Shapely expects (lng, lat)
-            if detected_area_geom.contains(feature_point):  # Feature is within the detected area
-                area_features.append(feature)
-                log_details.append(
-                    f"Feature {feature['properties']['denominaci_completa']} selected: inside detected area.")
+    else:
+        print("Clicked point is not inside any area.")
+        return {
+            "type": "FeatureCollection",
+            "features": [],
+            "area": "Out of bounds"
+        }
+
+    detected_area_geom = shape(detected_area["geometry"])
+    for feature in geojson_data["features"]:
+        feature_point = Point(feature["geometry"]["coordinates"])  # Shapely expects (lng, lat)
+        if detected_area_geom.contains(feature_point):  # Feature is within the detected area
+            area_features.append(feature)
+            print(
+                f"Feature {feature['properties']['denominaci_completa']} selected: inside detected area.")
 
     # Els centres situats a menys de 500 metres, encara que no siguin de la mateixa zona.
     for feature in geojson_data["features"]:
@@ -68,7 +73,7 @@ def find_features(lat, lng, radius=500):
         distance = geodesic(clicked_point, feature_coords).meters
         if distance <= radius:
             nearby_features.append(feature)
-            log_details.append(
+            print(
                 f"Feature {feature['properties']['denominaci_completa']} selected: within 500m radius (distance: {distance:.2f}m).")
         naturalesa = feature["properties"].get("nom_naturalesa", "")
         if naturalesa == "Públic":
@@ -85,11 +90,11 @@ def find_features(lat, lng, radius=500):
 
     # Log reasons for the nearest features
     for feature, distance in edu_features_top3:
-        log_details.append(
+        print(
             f"Feature {feature['properties']['denominaci_completa']} selected: one of 3 nearest 'Departament d'Educació' (distance: {distance:.2f}m).")
 
     for feature, distance in non_edu_features_top3:
-        log_details.append(
+        print(
             f"Feature {feature['properties']['denominaci_completa']} selected: one of 3 nearest non-'Departament d'Educació' (distance: {distance:.2f}m).")
 
     # Extract features from sorted lists
@@ -126,7 +131,7 @@ def find_features(lat, lng, radius=500):
     connection = psycopg2.connect(**db_config)
     cursor = connection.cursor()
     for feature in all_features.values():
-        log_details.append(f"Feature {feature['properties']['denominaci_completa']} is part of the final result set.")
+        print(f"Feature {feature['properties']['denominaci_completa']} is part of the final result set.")
 
         query = f"""
             SELECT 
@@ -151,8 +156,9 @@ def find_features(lat, lng, radius=500):
             ]
             all_features[feature['properties']['codi_centre']]['properties']['remaining_places'] = formatted_results
         except Exception as e:
-            print(f"Error: {e}")
-            
+            print(f"Error for feature {feature}, {e}")
+            all_features[feature['properties']['codi_centre']]['properties']['remaining_places'] = []
+
         query = f"""
            SELECT
                places_ofertades 
@@ -170,16 +176,13 @@ def find_features(lat, lng, radius=500):
             results = cursor.fetchall()
             all_features[feature['properties']['codi_centre']]['properties']['total_places'] = results[0]
         except Exception as e:
-            print(f"Error: {e}")
+            print(f"Error for feature {feature}, {e}")
+            all_features[feature['properties']['codi_centre']]['properties']['total_places'] = -1
 
     if cursor:
         cursor.close()
     if connection:
         connection.close()
-
-    # Print logs to the terminal
-    for log in log_details:
-        print(log)
 
     return {
         "type": "FeatureCollection",
