@@ -121,10 +121,16 @@ def find_features(lat, lng, radius=500):
     if publics < 6:
         extra_publics = sorted(edu_features, key=lambda x: x[1])[publics:6]
         for feature, _ in extra_publics:
+            feature_coords = (feature["geometry"]["coordinates"][1], feature["geometry"]["coordinates"][0])
+            distance = geodesic(clicked_point, feature_coords).meters
+            feature["properties"]["distance_to_home"] = distance  # Add distance to the properties
             all_features[feature["properties"]["codi_centre"]] = feature
     if concertats < 6:
         extra_concertats = sorted(non_edu_features, key=lambda x: x[1])[concertats:6]
         for feature, _ in extra_concertats:
+            feature_coords = (feature["geometry"]["coordinates"][1], feature["geometry"]["coordinates"][0])
+            distance = geodesic(clicked_point, feature_coords).meters
+            feature["properties"]["distance_to_home"] = distance  # Add distance to the properties
             all_features[feature["properties"]["codi_centre"]] = feature
 
     # Connect to the database
