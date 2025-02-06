@@ -154,6 +154,19 @@ def csv_to_psql():
     print("All files have been processed and inserted.")
 
 
+def filter_areas():
+    with open("areas.geojson", "r") as f:
+        geojson_data = json.load(f)
+
+    geojson_data["features"] = [
+        feature for feature in geojson_data["features"]
+        if "Barcelona" in feature["properties"]["nom_zona_e"]
+    ]
+
+    with open("barcelona_areas.geojson", "w") as f:
+        json.dump(geojson_data, f)
+
+
 if __name__ == "__main__":
     if sys.argv[1] == "filter_geojson":
         filter_geojson()
@@ -161,3 +174,5 @@ if __name__ == "__main__":
         show_areas()
     elif sys.argv[1] == "csv_to_psql":
         csv_to_psql()
+    elif sys.argv[1] == "filter_areas":
+        filter_areas()
