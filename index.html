@@ -90,6 +90,15 @@
 <div id="map"></div>
 <div id="results">
     <!-- Filter Section -->
+
+    <div>
+        <label for="toggle-switch">Option:</label>
+        <select id="toggle-switch">
+            <option value="option_a">Option A</option>
+            <option value="option_b">Option B</option>
+        </select>
+    </div>
+
     <div id="filters" style="margin-bottom: 10px;">
         <label>
             <input type="checkbox" id="filter-publics" checked> Públics
@@ -254,7 +263,9 @@
 
     function fetchAndDisplayNearbyMarkers(lat, lng) {
 const radius = 500; // Radius in meters
-fetch(`/projects/escoles/nearby?lat=${lat}&lng=${lng}&radius=${radius}`)
+const toggleSwitch = document.getElementById('toggle-switch');
+const selectedOption = toggleSwitch.value;
+fetch(`/projects/escoles/nearby?lat=${lat}&lng=${lng}&radius=${radius}&option=${selectedOption}`)
     .then(response => response.json())
     .then(data => {
         resultList.innerHTML = ''; // Clear the previous results

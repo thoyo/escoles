@@ -204,6 +204,7 @@ def get_nearby_features():
     lat = float(request.args.get("lat"))
     lng = float(request.args.get("lng"))
     radius = float(request.args.get("radius", 500))  # Default radius is 500m
+    option = request.args.get("option") # TODO: apply logic based on option
 
     # Find nearby features
     filtered_geojson = find_features(lat, lng, radius)
