@@ -48,7 +48,8 @@
     * Wrong coords (e.g for Sadako)
   * http://mapaescolar.gencat.cat/
     * Exported xls contains a CSV that differentiates between concertated and private schools
-    * Getting good coordinates for all: 
+    * Getting good coordinates for all
+  * https://analisi.transparenciacatalunya.cat/Educaci-/Estad-stica-de-l-assignaci-de-places-en-el-proc-s-/99md-r3rq/about_data
 
 
 # [assignations_data](assignations_data)
