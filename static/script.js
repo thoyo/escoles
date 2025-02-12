@@ -127,7 +127,8 @@ function handleItemClick(index) {
 }
 
 function fetchAndDisplayNearbyMarkers(lat, lng) {
-  const radius = 500; // Radius in meters
+  const distanceRange = document.getElementById("distance-range");
+  const radius = parseFloat(distanceRange.value); // Get the custom distance value
   const toggleSwitch = document.getElementById("toggle-switch");
   const selectedOption = toggleSwitch.value;
   fetch(
@@ -143,7 +144,6 @@ function fetchAndDisplayNearbyMarkers(lat, lng) {
         return;
       }
 
-      // Draw the 500m radius circle
       activeCircle = L.circle([lat, lng], {
         color: "blue",
         fillColor: "#a3c9ff",

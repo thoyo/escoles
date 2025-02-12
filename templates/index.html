@@ -8,7 +8,10 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
     />
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
@@ -20,7 +23,9 @@
       <div>
         <label for="toggle-switch">Option:</label>
         <select id="toggle-switch">
-          <option value="max_points">Centres on es pot obtenir la màxima puntuació</option>
+          <option value="max_points">
+            Centres on es pot obtenir la màxima puntuació
+          </option>
           <option value="all_centers">Tots els centres</option>
         </select>
       </div>
@@ -31,6 +36,17 @@
         </label>
         <label style="margin-left: 10px">
           <input type="checkbox" id="filter-concertats" checked /> Concertats
+        </label>
+        <label style="margin-left: 10px">
+          Distància: <span id="distance-value">500</span> m
+          <input
+            type="range"
+            id="distance-range"
+            min="0"
+            max="15000"
+            step="500"
+            value="500"
+          />
         </label>
       </div>
 
