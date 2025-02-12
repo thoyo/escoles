@@ -408,6 +408,33 @@ function displayChart(feature, remainingPlaces) {
   });
 }
 
+// Function to update the distance control based on the selected option
+function updateDistanceControl() {
+  const toggleSwitch = document.getElementById("toggle-switch");
+  const distanceRange = document.getElementById("distance-range");
+  const distanceValue = document.getElementById("distance-value");
+
+  if (toggleSwitch.value === "max_points") {
+    distanceRange.value = 500;
+    distanceRange.disabled = true;
+    distanceValue.textContent = 500;
+  } else {
+    distanceRange.disabled = false;
+  }
+}
+
+// Attach event listener to the toggle switch
+document.getElementById("toggle-switch").addEventListener("change", function () {
+  updateDistanceControl();
+  if (homeMarker) {
+    const { lat, lng } = homeMarker.getLatLng();
+    fetchAndDisplayNearbyMarkers(lat, lng);
+  }
+});
+
+// Initial call to set the correct state on page load
+updateDistanceControl();
+
 // Handle map click event
 map.on("click", function (e) {
   const { lat, lng } = e.latlng;
