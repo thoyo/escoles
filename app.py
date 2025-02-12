@@ -32,18 +32,17 @@ db_config = {
 }
 
 
-
-# Helper function to calculate distance and find nearby features
-def find_features(lat, lng, radius=500):
-
+def find_features(lat, lng, radius, option):
     clicked_point = (lat, lng)
     point_geom = Point(lng, lat)  # Shapely expects (x, y) => (lng, lat)
     nearby_features = []
     edu_features = []
+    edu_features_top3 = []
     non_edu_features = []
+    non_edu_features_top3 = []
+    private_features = []
     area_features = []
 
-    # Tots els centres públics i concertats de la seva zona
     # Check which area the clicked point belongs to
     for area in areas_data["features"]:
         area_geom = shape(area["geometry"])  # Create a Shapely geometry
@@ -59,85 +58,81 @@ def find_features(lat, lng, radius=500):
             "area": "Out of bounds"
         }
 
-    detected_area_geom = shape(detected_area["geometry"])
-    for feature in geojson_data["features"]:
-        feature_point = Point(feature["geometry"]["coordinates"])  # Shapely expects (lng, lat)
-        if detected_area_geom.contains(feature_point):  # Feature is within the detected area
-            area_features.append(feature)
-            print(
-                f"Feature {feature['properties']['denominaci_completa']} selected: inside detected area.")
+    # Tots els centres públics i concertats de la seva zona
+    if option == "max_points":
+        detected_area_geom = shape(detected_area["geometry"])
+        for feature in geojson_data["features"]:
+            feature_point = Point(feature["geometry"]["coordinates"])  # Shapely expects (lng, lat)
+            if detected_area_geom.contains(feature_point):  # Feature is within the detected area
+                area_features.append(feature)   # TODO: pre-compute and store in a DB
+                print(
+                    f"Feature {feature['properties']['denominaci_completa']} selected: inside detected area.")
 
-    # Els centres situats a menys de 500 metres, encara que no siguin de la mateixa zona.
     for feature in geojson_data["features"]:
         feature_coords = (feature["geometry"]["coordinates"][1], feature["geometry"]["coordinates"][0])
         distance = geodesic(clicked_point, feature_coords).meters
         if distance <= radius:
+            feature["properties"]["distance_to_home"] = distance
             nearby_features.append(feature)
-            print(
-                f"Feature {feature['properties']['denominaci_completa']} selected: within 500m radius (distance: {distance:.2f}m).")
         naturalesa = feature["properties"].get("nom_naturalesa", "")
         if naturalesa == "Públic":
             edu_features.append((feature, distance))
         elif naturalesa == "Concertat":
             non_edu_features.append((feature, distance))
+        elif naturalesa == "Privat":
+            private_features.append((feature, distance))
 
-    # Els 3 centres públics i 3 centres concertats més propers al domicili.
-    # Sort by distance for nearest search
-    edu_features_top3 = sorted(edu_features, key=lambda x: x[1])[
-                        :3]  # 3 nearest where titularitat = "Departament d'Educació"
-    non_edu_features_top3 = sorted(non_edu_features, key=lambda x: x[1])[
-                            :3]  # 3 nearest where titularitat != "Departament d'Educació"
+    if option == "max_points":
+        # Els 3 centres públics i 3 centres concertats més propers al domicili.
+        edu_features_top3 = sorted(edu_features, key=lambda x: x[1])[:3]
+        non_edu_features_top3 = sorted(non_edu_features, key=lambda x: x[1])[:3]
 
-    # Log reasons for the nearest features
-    for feature, distance in edu_features_top3:
-        print(
-            f"Feature {feature['properties']['denominaci_completa']} selected: one of 3 nearest 'Departament d'Educació' (distance: {distance:.2f}m).")
-
-    for feature, distance in non_edu_features_top3:
-        print(
-            f"Feature {feature['properties']['denominaci_completa']} selected: one of 3 nearest non-'Departament d'Educació' (distance: {distance:.2f}m).")
-
-    # Extract features from sorted lists
-    edu_features_top3 = [item[0] for item in edu_features_top3]
-    non_edu_features_top3 = [item[0] for item in non_edu_features_top3]
+        # Extract features from sorted lists
+        edu_features_top3 = [item[0] for item in edu_features_top3]
+        non_edu_features_top3 = [item[0] for item in non_edu_features_top3]
 
     # Combine all unique features (no duplicates)
     all_features = {f["properties"]["codi_centre"]: f for f in
-                    (nearby_features + edu_features_top3 + non_edu_features_top3 + area_features)}
+                    (nearby_features + edu_features_top3 + non_edu_features_top3 + private_features +
+                     area_features)}    # TODO: remove duplicates?
 
-    # I, si s'escau, altres centres de proximitat fins arribar a 6 centres públics i 6 centres concertats.
-    publics = 0
-    concertats = 0
-    # Log unique features added
-    for feature in all_features.values():
-        if feature["properties"]["nom_naturalesa"] == "Públic":
-            publics += 1
-        elif naturalesa == "Concertat":
-            concertats += 1
-        feature_coords = (feature["geometry"]["coordinates"][1], feature["geometry"]["coordinates"][0])
-        distance = geodesic(clicked_point, feature_coords).meters
-        feature["properties"]["distance_to_home"] = distance  # Add distance to the properties
-
-    if publics < 6:
-        extra_publics = sorted(edu_features, key=lambda x: x[1])[publics:6]
-        for feature, _ in extra_publics:
+    if option == "max_points":
+        # I, si s'escau, altres centres de proximitat fins arribar a 6 centres públics i 6 centres concertats.
+        publics = 0
+        concertats = 0
+        # Log unique features added
+        for feature in all_features.values():
+            if feature["properties"]["nom_naturalesa"] == "Públic":
+                publics += 1
+            elif naturalesa == "Concertat":
+                concertats += 1
             feature_coords = (feature["geometry"]["coordinates"][1], feature["geometry"]["coordinates"][0])
             distance = geodesic(clicked_point, feature_coords).meters
             feature["properties"]["distance_to_home"] = distance  # Add distance to the properties
-            all_features[feature["properties"]["codi_centre"]] = feature
-    if concertats < 6:
-        extra_concertats = sorted(non_edu_features, key=lambda x: x[1])[concertats:6]
-        for feature, _ in extra_concertats:
-            feature_coords = (feature["geometry"]["coordinates"][1], feature["geometry"]["coordinates"][0])
-            distance = geodesic(clicked_point, feature_coords).meters
-            feature["properties"]["distance_to_home"] = distance  # Add distance to the properties
-            all_features[feature["properties"]["codi_centre"]] = feature
+
+        if publics < 6:
+            extra_publics = sorted(edu_features, key=lambda x: x[1])[publics:6]
+            for feature, _ in extra_publics:
+                feature_coords = (feature["geometry"]["coordinates"][1], feature["geometry"]["coordinates"][0])
+                distance = geodesic(clicked_point, feature_coords).meters
+                feature["properties"]["distance_to_home"] = distance  # Add distance to the properties
+                all_features[feature["properties"]["codi_centre"]] = feature
+        if concertats < 6:
+            extra_concertats = sorted(non_edu_features, key=lambda x: x[1])[concertats:6]
+            for feature, _ in extra_concertats:
+                feature_coords = (feature["geometry"]["coordinates"][1], feature["geometry"]["coordinates"][0])
+                distance = geodesic(clicked_point, feature_coords).meters
+                feature["properties"]["distance_to_home"] = distance  # Add distance to the properties
+                all_features[feature["properties"]["codi_centre"]] = feature
 
     # Connect to the database
     connection = psycopg2.connect(**db_config)
     cursor = connection.cursor()
     for feature in all_features.values():
-        print(f"Feature {feature['properties']['denominaci_completa']} is part of the final result set.")
+        if feature["properties"].get("distance_to_home") is None:
+            feature_coords = (feature["geometry"]["coordinates"][1], feature["geometry"]["coordinates"][0])
+            distance = geodesic(clicked_point, feature_coords).meters
+            feature["properties"]["distance_to_home"] = distance
 
         query = f"""
             SELECT 
@@ -175,7 +170,7 @@ def find_features(lat, lng, radius=500):
            ORDER BY 
                year desc
         """
-        
+
         try:
             # Execute the query
             cursor.execute(query)
@@ -204,10 +199,10 @@ def get_nearby_features():
     lat = float(request.args.get("lat"))
     lng = float(request.args.get("lng"))
     radius = float(request.args.get("radius", 500))  # Default radius is 500m
-    option = request.args.get("option") # TODO: apply logic based on option
+    option = request.args.get("option")  # TODO: apply logic based on option
 
     # Find nearby features
-    filtered_geojson = find_features(lat, lng, radius)
+    filtered_geojson = find_features(lat, lng, radius, option)
     return jsonify(filtered_geojson)
 
 
