@@ -126,14 +126,14 @@ function handleItemClick(index) {
   currentChart.update();
 }
 
+// Function to fetch and display nearby markers
 function fetchAndDisplayNearbyMarkers(lat, lng) {
   const distanceRange = document.getElementById("distance-range");
   const radius = parseFloat(distanceRange.value); // Get the custom distance value
   const toggleSwitch = document.getElementById("toggle-switch");
   const selectedOption = toggleSwitch.value;
-  fetch(
-    `/projects/escoles/nearby?lat=${lat}&lng=${lng}&radius=${radius}&option=${selectedOption}`,
-  )
+
+  fetch(`/projects/escoles/nearby?lat=${lat}&lng=${lng}&radius=${radius}&option=${selectedOption}`)
     .then((response) => response.json())
     .then((data) => {
       resultList.innerHTML = ""; // Clear the previous results
@@ -144,6 +144,10 @@ function fetchAndDisplayNearbyMarkers(lat, lng) {
         return;
       }
 
+      // Draw the radius circle
+      if (activeCircle) {
+        map.removeLayer(activeCircle);
+      }
       activeCircle = L.circle([lat, lng], {
         color: "blue",
         fillColor: "#a3c9ff",
@@ -153,6 +157,9 @@ function fetchAndDisplayNearbyMarkers(lat, lng) {
 
       // Draw the detected area if any
       if (data.area && selectedOption === "max_points") {
+        if (activeArea) {
+          map.removeLayer(activeArea);
+        }
         activeArea = L.geoJSON(data.area, {
           style: { color: "purple", fillOpacity: 0.2 },
         }).addTo(map);
@@ -169,8 +176,7 @@ function fetchAndDisplayNearbyMarkers(lat, lng) {
 
       function filterResults() {
         const showPublics = document.getElementById("filter-publics").checked;
-        const showConcertats =
-          document.getElementById("filter-concertats").checked;
+        const showConcertats = document.getElementById("filter-concertats").checked;
 
         // Clear the map and the list
         activeMarkers.forEach((marker) => map.removeLayer(marker));
@@ -334,6 +340,27 @@ function fetchAndDisplayNearbyMarkers(lat, lng) {
     });
 }
 
+// Update the distance value display and fetch new markers when the range input changes
+document.getElementById("distance-range").addEventListener("change", function () {
+  document.getElementById("distance-value").textContent = this.value;
+  if (homeMarker) {
+    const { lat, lng } = homeMarker.getLatLng();
+    fetchAndDisplayNearbyMarkers(lat, lng);
+  }
+});
+
+// Handle map click event
+map.on("click", function (e) {
+  const { lat, lng } = e.latlng;
+
+  clearMap(); // Clear existing markers, radius circle, area, and home marker
+
+  // Place a home marker at the clicked location
+  homeMarker = L.marker([lat, lng], { icon: homeIcon }).addTo(map);
+
+  // Fetch and display nearby markers
+  fetchAndDisplayNearbyMarkers(lat, lng);
+});
 function displayChart(feature, remainingPlaces) {
   const ctx = document.getElementById("remainingPlacesChart").getContext("2d");
 
