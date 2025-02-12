@@ -1,7 +1,7 @@
 import json
 import os
 import psycopg2
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, render_template
 from geopy.distance import geodesic
 from shapely.geometry import shape, Point
 from dotenv import load_dotenv
@@ -214,7 +214,7 @@ def get_nearby_features():
 # Serve the frontend (index.html)
 @app.route("/projects/escoles", strict_slashes=False)
 def serve_frontend():
-    return send_from_directory('.', 'index.html')
+    return render_template('index.html')
 
 
 # Catch-all route for all other paths
