@@ -94,13 +94,12 @@ def find_features(lat, lng, radius, option):
     # Combine all unique features (no duplicates)
     all_features = {f["properties"]["codi_centre"]: f for f in
                     (nearby_features + edu_features_top3 + non_edu_features_top3 + private_features +
-                     area_features)}    # TODO: remove duplicates?
+                     area_features)}
 
+    # I, si s'escau, altres centres de proximitat fins arribar a 6 centres públics i 6 centres concertats.
     if option == "max_points":
-        # I, si s'escau, altres centres de proximitat fins arribar a 6 centres públics i 6 centres concertats.
         publics = 0
         concertats = 0
-        # Log unique features added
         for feature in all_features.values():
             if feature["properties"]["nom_naturalesa"] == "Públic":
                 publics += 1

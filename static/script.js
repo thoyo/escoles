@@ -152,7 +152,7 @@ function fetchAndDisplayNearbyMarkers(lat, lng) {
       }).addTo(map);
 
       // Draw the detected area if any
-      if (data.area) {
+      if (data.area && selectedOption === "max_points") {
         activeArea = L.geoJSON(data.area, {
           style: { color: "purple", fillOpacity: 0.2 },
         }).addTo(map);
