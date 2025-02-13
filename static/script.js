@@ -131,9 +131,11 @@ function fetchAndDisplayNearbyMarkers(lat, lng) {
   const distanceRange = document.getElementById("distance-range");
   const radius = parseFloat(distanceRange.value); // Get the custom distance value
   const toggleSwitch = document.getElementById("toggle-switch");
-  const selectedOption = toggleSwitch.value;
+  const selectedOption = toggleSwitch.checked ? "max_points" : "all_centers";
 
-  fetch(`/projects/escoles/nearby?lat=${lat}&lng=${lng}&radius=${radius}&option=${selectedOption}`)
+  fetch(
+    `/projects/escoles/nearby?lat=${lat}&lng=${lng}&radius=${radius}&option=${selectedOption}`,
+  )
     .then((response) => response.json())
     .then((data) => {
       resultList.innerHTML = ""; // Clear the previous results
@@ -176,7 +178,8 @@ function fetchAndDisplayNearbyMarkers(lat, lng) {
 
       function filterResults() {
         const showPublics = document.getElementById("filter-publics").checked;
-        const showConcertats = document.getElementById("filter-concertats").checked;
+        const showConcertats =
+          document.getElementById("filter-concertats").checked;
 
         // Clear the map and the list
         activeMarkers.forEach((marker) => map.removeLayer(marker));
@@ -341,13 +344,15 @@ function fetchAndDisplayNearbyMarkers(lat, lng) {
 }
 
 // Update the distance value display and fetch new markers when the range input changes
-document.getElementById("distance-range").addEventListener("change", function () {
-  document.getElementById("distance-value").textContent = this.value;
-  if (homeMarker) {
-    const { lat, lng } = homeMarker.getLatLng();
-    fetchAndDisplayNearbyMarkers(lat, lng);
-  }
-});
+document
+  .getElementById("distance-range")
+  .addEventListener("change", function () {
+    document.getElementById("distance-value").textContent = this.value;
+    if (homeMarker) {
+      const { lat, lng } = homeMarker.getLatLng();
+      fetchAndDisplayNearbyMarkers(lat, lng);
+    }
+  });
 
 // Handle map click event
 map.on("click", function (e) {
@@ -414,7 +419,7 @@ function updateDistanceControl() {
   const distanceRange = document.getElementById("distance-range");
   const distanceValue = document.getElementById("distance-value");
 
-  if (toggleSwitch.value === "max_points") {
+  if (toggleSwitch.checked) {
     distanceRange.value = 500;
     distanceRange.disabled = true;
     distanceValue.textContent = 500;
@@ -424,13 +429,15 @@ function updateDistanceControl() {
 }
 
 // Attach event listener to the toggle switch
-document.getElementById("toggle-switch").addEventListener("change", function () {
-  updateDistanceControl();
-  if (homeMarker) {
-    const { lat, lng } = homeMarker.getLatLng();
-    fetchAndDisplayNearbyMarkers(lat, lng);
-  }
-});
+document
+  .getElementById("toggle-switch")
+  .addEventListener("change", function () {
+    updateDistanceControl();
+    if (homeMarker) {
+      const { lat, lng } = homeMarker.getLatLng();
+      fetchAndDisplayNearbyMarkers(lat, lng);
+    }
+  });
 
 // Initial call to set the correct state on page load
 updateDistanceControl();

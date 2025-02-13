@@ -20,14 +20,14 @@
     <div id="results">
       <!-- Filter Section -->
 
-      <div>
-        <label for="toggle-switch">Option:</label>
-        <select id="toggle-switch">
-          <option value="max_points">
-            Centres on es pot obtenir la màxima puntuació
-          </option>
-          <option value="all_centers">Tots els centres</option>
-        </select>
+      <div class="toggle-switch">
+        <span class="option-left">Max Points</span>
+        <label for="toggle-switch" class="switch-label">
+          <input type="checkbox" id="toggle-switch" />
+          <span class="switch-inner"></span>
+          <span class="switch-switch"></span>
+        </label>
+        <span class="option-right">All Centers</span>
       </div>
 
       <div id="filters" style="margin-bottom: 10px">
