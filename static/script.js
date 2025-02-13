@@ -166,6 +166,9 @@ function fetchAndDisplayNearbyMarkers(lat, lng) {
           style: { color: "purple", fillOpacity: 0.2 },
         }).addTo(map);
       }
+      else if (selectedOption === "all_centers" && activeArea) {
+        map.removeLayer(activeArea);
+      }
 
       const sortedFeatures = data.features.sort(
         (a, b) => a.properties.distance_to_home - b.properties.distance_to_home,
