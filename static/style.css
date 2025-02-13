@@ -98,7 +98,7 @@ body {
 
 .switch-switch {
   position: absolute;
-  bottom: 4px;
+  top: 4px;
   left: 4px;
   width: 26px;
   height: 26px;
@@ -111,9 +111,10 @@ input:checked + .switch-inner {
   background-color: #2196F3;
 }
 
-input:checked + .switch-switch {
+input:checked + .switch-inner + .switch-switch {
   transform: translateX(26px);
 }
+
 /* Ensure the map remains visible on vertical screens */
 @media (max-width: 768px) {
   #map {
