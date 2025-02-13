@@ -40,7 +40,6 @@ def find_features(lat, lng, radius, option):
     edu_features_top3 = []
     non_edu_features = []
     non_edu_features_top3 = []
-    private_features = []
     area_features = []
 
     # Check which area the clicked point belongs to
@@ -79,8 +78,6 @@ def find_features(lat, lng, radius, option):
             edu_features.append((feature, distance))
         elif naturalesa == "Concertat":
             non_edu_features.append((feature, distance))
-        elif naturalesa == "Privat":
-            private_features.append((feature, distance))
 
     if option == "max_points":
         # Els 3 centres públics i 3 centres concertats més propers al domicili.
@@ -93,7 +90,7 @@ def find_features(lat, lng, radius, option):
 
     # Combine all unique features (no duplicates)
     all_features = {f["properties"]["codi_centre"]: f for f in
-                    (nearby_features + edu_features_top3 + non_edu_features_top3 + private_features +
+                    (nearby_features + edu_features_top3 + non_edu_features_top3 +
                      area_features)}
 
     # I, si s'escau, altres centres de proximitat fins arribar a 6 centres públics i 6 centres concertats.
@@ -132,6 +129,11 @@ def find_features(lat, lng, radius, option):
             feature_coords = (feature["geometry"]["coordinates"][1], feature["geometry"]["coordinates"][0])
             distance = geodesic(clicked_point, feature_coords).meters
             feature["properties"]["distance_to_home"] = distance
+
+        if feature["properties"]["nom_naturalesa"] == "Privat":
+            all_features[feature['properties']['codi_centre']]['properties']['remaining_places'] = []
+            all_features[feature['properties']['codi_centre']]['properties']['total_places'] = -1
+            continue    # No info available about spots in private schools
 
         query = f"""
             SELECT 

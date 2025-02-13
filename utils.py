@@ -39,8 +39,7 @@ def filter_geojson():
         "features": filtered_features,
     }
 
-    # Disambiguate if public, concertat or privat from the xls file (the geojson has only either public, or others),
-    # and drop privates
+    # Disambiguate if public, concertat or privat from the xls file (the geojson has only either public, or others)
     filtered_features = []
     df = pd.read_excel('inventory.xls')
     for feature in filtered_geojson["features"]:
@@ -51,12 +50,15 @@ def filter_geojson():
             feature["properties"]["nom_naturalesa"] = nom_naturalesa.iloc[0]
         else:
             pp.pprint(f"Feature {feature['properties']['denominaci_completa']} not found in the xls file")
-        if feature["properties"]["nom_naturalesa"] != "Privat":
-            for feature_ok_coords in data_ok_coords["features"]:
-                if feature_ok_coords["properties"]["CODI_CENTRE"] == feature["properties"]["codi_centre"]:
+        for feature_ok_coords in data_ok_coords["features"]:
+            if feature_ok_coords["properties"]["CODI_CENTRE"] == feature["properties"]["codi_centre"]:
+                if feature_ok_coords["geometry"] is None:
+                    pp.pprint(f"Coordinates for feature {feature['properties']['denominaci_completa']} not found in "
+                              f"the data_ok_coords file")
+                else:
                     feature["geometry"]["coordinates"] = feature_ok_coords["geometry"]["coordinates"]
                     filtered_features.append(feature)
-                    break
+                break
 
     filtered_geojson["features"] = filtered_features
 
