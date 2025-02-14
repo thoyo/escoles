@@ -165,8 +165,7 @@ function fetchAndDisplayNearbyMarkers(lat, lng) {
         activeArea = L.geoJSON(data.area, {
           style: { color: "purple", fillOpacity: 0.2 },
         }).addTo(map);
-      }
-      else if (selectedOption === "all_centers" && activeArea) {
+      } else if (selectedOption === "all_centers" && activeArea) {
         map.removeLayer(activeArea);
       }
 
@@ -183,6 +182,7 @@ function fetchAndDisplayNearbyMarkers(lat, lng) {
         const showPublics = document.getElementById("filter-publics").checked;
         const showConcertats =
           document.getElementById("filter-concertats").checked;
+        const showPrivats = document.getElementById("filter-privats").checked;
 
         // Clear the map and the list
         activeMarkers.forEach((marker) => map.removeLayer(marker));
@@ -193,7 +193,13 @@ function fetchAndDisplayNearbyMarkers(lat, lng) {
         const filteredFeatures = sortedFeatures.filter((feature) => {
           const naturalesa = feature.properties["nom_naturalesa"];
           const isPublic = naturalesa === "Públic";
-          return (isPublic && showPublics) || (!isPublic && showConcertats);
+          const isConcertat = naturalesa === "Concertat";
+          const isPrivat = naturalesa === "Privat";
+          return (
+            (isPublic && showPublics) ||
+            (isConcertat && showConcertats) ||
+            (isPrivat && showPrivats)
+          );
         });
 
         // Re-add filtered markers and items to the list
@@ -340,6 +346,9 @@ function fetchAndDisplayNearbyMarkers(lat, lng) {
       document
         .getElementById("filter-concertats")
         .addEventListener("change", filterResults);
+      document
+        .getElementById("filter-privats")
+        .addEventListener("change", filterResults);
 
       // Initial render with filters applied
       filterResults();
@@ -421,13 +430,17 @@ function updateDistanceControl() {
   const toggleSwitch = document.getElementById("toggle-switch");
   const distanceRange = document.getElementById("distance-range");
   const distanceValue = document.getElementById("distance-value");
+  const filterPrivats = document.getElementById("filter-privats");
 
   if (toggleSwitch.checked) {
     distanceRange.value = 500;
     distanceRange.disabled = true;
     distanceValue.textContent = 500;
+    filterPrivats.checked = false;
+    filterPrivats.disabled = true;
   } else {
     distanceRange.disabled = false;
+    filterPrivats.disabled = false;
   }
 }
 
