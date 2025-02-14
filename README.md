@@ -1,33 +1,33 @@
 # TODO
+* load postgres creds from env
+* add in item details (map and list)
+    * forecast of remaining spots this year
+    * ~~remaining spots last year~~
+    * ~~total spots~~
+* allow sorting by the previous fields
+* make the timeseries rounded
+* add label with school name on the map always
+* add timeseries about
+    * offers
+    * remaining spots after first round
+    * ~~remaining spots~~
+* add other info about surrounding
+    * distance to park
+    * pollution
+    * noise level
+* unittest that asserts equal results as in https://www.edubcn.cat/ca/alumnat_i_familia/informacio_general_matriculacio/arees_influencia/consulta_de_centres_educatius#/centres/... 
+
 * ~~display the 500m radius~~
 * ~~color code public and concertated schools~~
 * ~~display the areas~~
-* add choice selector that allows to choose between
-  * showing centers for which max points will be obtained
-  * showing centers at less than given distance (and add slider to select dist, from 0 to inf). And add privates in this case
-* load postgres creds from env
-* add in item details (map and list) 
-  * ~~remaining spots last year~~
-  * forecast of remaining spots this year
-  * ~~total spots~~
-* allow sorting by the previous fields
-* make the timeseries rounded
+* ~~add choice selector that allows to choose between~~
+  * ~~showing centers for which max points will be obtained~~
+  * ~~showing centers at less than given distance (and add slider to select dist, from 0 to inf). And add privates in this case~~
 * ~~remove non barcelonian areas and warn about clicking outside barcelona~~
 * ~~remove private centers~~
 * ~~add email and website of the center~~
 * ~~hyperlink with link to google maps the address to the center~~
-* lint the frontend
-* add label with school name on the map always
-* add timeseries about
-  * requests
-  * offers
-  * requests/offers
-  * ~~remaining spots~~
-* add other info about surrounding
-  * distance to park
-  * pollution
-  * noise level
-* unittest that asserts equal results as in https://www.edubcn.cat/ca/alumnat_i_familia/informacio_general_matriculacio/arees_influencia/consulta_de_centres_educatius#/centres/... 
+* ~~lint the frontend~~
 * ~~add placemark for home~~
 * ~~show "list" view alongside the map~~
 * ~~add also checking for at least 6 centers of each type~~
