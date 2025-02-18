@@ -73,6 +73,8 @@ def find_features(lat, lng, radius, option):
         if distance <= radius:
             feature["properties"]["distance_to_home"] = distance
             nearby_features.append(feature)
+            print(
+                f"Feature {feature['properties']['denominaci_completa']} selected: within radius.")
         naturalesa = feature["properties"].get("nom_naturalesa", "")
         if naturalesa == "Públic":
             edu_features.append((feature, distance))
@@ -105,6 +107,10 @@ def find_features(lat, lng, radius, option):
             feature_coords = (feature["geometry"]["coordinates"][1], feature["geometry"]["coordinates"][0])
             distance = geodesic(clicked_point, feature_coords).meters
             feature["properties"]["distance_to_home"] = distance  # Add distance to the properties
+
+        # Remove from the list the ones already selected
+        edu_features = [item for item in edu_features if item[0] not in all_features.values()]
+        non_edu_features = [item for item in non_edu_features if item[0] not in all_features.values()]
 
         if publics < 6:
             extra_publics = sorted(edu_features, key=lambda x: x[1])[publics:6]
